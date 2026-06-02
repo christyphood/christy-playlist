@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>其他自建歌单</title>
+    <!-- Tailwind：用 jsDelivr，Cursor / Live Preview 比 cdn.tailwindcss.com 更稳定 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Figma 导出工具：仅 ?figma=1 时加载，避免拖慢或干扰日常预览 -->
+    <script>
+      if (/\bfigma=1\b/.test(location.search)) {
+        var s = document.createElement('script');
+        s.src = 'https://kg.qq.com/gtimg/music/common/upload/image/copy-to-figma.js';
+        document.head.appendChild(s);
+      }
+    </script>
+    <style>
+      @font-face {
+        font-family: 'joox';
+        src: url('https://kg.qq.com/gtimg/music/common/upload/font/joox-regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'joox';
+        src: url('https://kg.qq.com/gtimg/music/common/upload/font/joox-medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'joox';
+        src: url('https://kg.qq.com/gtimg/music/common/upload/font/joox-bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'joox-sans-brand';
+        src: url('https://kg.qq.com/gtimg/music/common/upload/font/joox-sans-brand.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+      }
+      html {
+        height: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        min-height: 100dvh;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        overscroll-behavior: none;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right)
+          env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      .app-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+      }
+      #screen {
+        flex-shrink: 0;
+        transform-origin: center center;
+        will-change: transform;
+      }
+      @media (max-width: 480px) {
+        .expanded-close {
+          width: 48px;
+          height: 48px;
+          font-size: 30px;
+          line-height: 48px;
+          top: max(65px, calc(env(safe-area-inset-top) + 52px));
+          right: max(16px, env(safe-area-inset-right));
+        }
+        .cover-stack-trigger {
+          touch-action: manipulation;
+        }
+      }
+
+      .fluid-bg {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        background: #D57100;
+      }
+      .fluid-bg .blob {
+        position: absolute;
+        filter: blur(42px);
+        will-change: transform;
+      }
+      /* 亮珊瑚 · 右上 */
+      .fluid-bg .blob-1 {
+        width: 220px; height: 170px;
+        background: #FFC860;
+        border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+        top: -40px; right: -50px;
+        opacity: 0.95;
+        animation: drift1 10s ease-in-out infinite alternate, morph1 14s ease-in-out infinite;
+      }
+      /* 深褐暗流 · 中部 */
+      .fluid-bg .blob-2 {
+        width: 240px; height: 100px;
+        background: #4A0E00;
+        border-radius: 45% 55% 40% 60% / 55% 45% 55% 45%;
+        top: 120px; left: 20px;
+        opacity: 1;
+        animation: drift2 12s ease-in-out infinite alternate, morph2 16s ease-in-out infinite;
+      }
+      /* 奶油高光 · 左中 */
+      .fluid-bg .blob-3 {
+        width: 200px; height: 160px;
+        background: #FFF4DC;
+        border-radius: 55% 45% 50% 50% / 40% 60% 45% 55%;
+        top: 60px; left: -50px;
+        opacity: 0.45;
+        animation: drift3 11s ease-in-out infinite alternate, morph3 13s ease-in-out infinite;
+      }
+      /* 艳橙 · 左下 */
+      .fluid-bg .blob-4 {
+        width: 210px; height: 150px;
+        background: #FF4000;
+        border-radius: 40% 60% 45% 55% / 55% 40% 60% 45%;
+        bottom: -30px; left: -40px;
+        opacity: 0.95;
+        animation: drift4 13s ease-in-out infinite alternate, morph1 17s ease-in-out infinite;
+      }
+      /* 浅金高光 · 右下 */
+      .fluid-bg .blob-5 {
+        width: 190px; height: 140px;
+        background: #FFFAE8;
+        border-radius: 50% 50% 40% 60% / 45% 55% 50% 50%;
+        bottom: 20px; right: -30px;
+        opacity: 0.4;
+        animation: drift5 9s ease-in-out infinite alternate, morph2 12s ease-in-out infinite;
+      }
+      /* 深酒红 · 右中 */
+      .fluid-bg .blob-6 {
+        width: 180px; height: 130px;
+        background: #901008;
+        border-radius: 45% 55% 60% 40% / 50% 45% 55% 50%;
+        top: 80px; right: 40px;
+        opacity: 0.92;
+        animation: drift6 14s ease-in-out infinite alternate, morph3 15s ease-in-out infinite;
+      }
+
+      @keyframes morph1 {
+        0%, 100% { border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%; }
+        25%      { border-radius: 40% 60% 45% 55% / 60% 40% 55% 45%; }
+        50%      { border-radius: 55% 45% 60% 40% / 45% 55% 50% 50%; }
+        75%      { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+      }
+      @keyframes morph2 {
+        0%, 100% { border-radius: 45% 55% 40% 60% / 55% 45% 55% 45%; }
+        25%      { border-radius: 55% 45% 55% 45% / 40% 60% 45% 55%; }
+        50%      { border-radius: 40% 60% 50% 50% / 55% 45% 40% 60%; }
+        75%      { border-radius: 60% 40% 45% 55% / 50% 50% 55% 45%; }
+      }
+      @keyframes morph3 {
+        0%, 100% { border-radius: 55% 45% 50% 50% / 40% 60% 45% 55%; }
+        25%      { border-radius: 45% 55% 55% 45% / 55% 45% 50% 50%; }
+        50%      { border-radius: 60% 40% 40% 60% / 50% 50% 60% 40%; }
+        75%      { border-radius: 50% 50% 45% 55% / 45% 55% 40% 60%; }
+      }
+
+      @keyframes drift1 {
+        0%   { transform: translate(0, 0) scale(1); }
+        25%  { transform: translate(120px, 60px) scale(1.15); }
+        50%  { transform: translate(220px, 140px) scale(0.9); }
+        75%  { transform: translate(80px, 200px) scale(1.1); }
+        100% { transform: translate(180px, 50px) scale(0.95); }
+      }
+      @keyframes drift2 {
+        0%   { transform: translate(0, 0) scale(1); }
+        25%  { transform: translate(-100px, 80px) scale(1.1); }
+        50%  { transform: translate(-180px, 40px) scale(0.88); }
+        75%  { transform: translate(-60px, 160px) scale(1.2); }
+        100% { transform: translate(-140px, 100px) scale(0.92); }
+      }
+      @keyframes drift3 {
+        0%   { transform: translate(0, 0) scale(1); }
+        25%  { transform: translate(100px, -110px) scale(1.2); }
+        50%  { transform: translate(180px, -50px) scale(0.85); }
+        75%  { transform: translate(50px, -150px) scale(1.12); }
+        100% { transform: translate(140px, -80px) scale(0.92); }
+      }
+      @keyframes drift4 {
+        0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+        33%  { transform: translate(-130px, -60px) scale(1.2) rotate(30deg); }
+        66%  { transform: translate(-60px, 90px) scale(0.8) rotate(-20deg); }
+        100% { transform: translate(-150px, 20px) scale(1.1) rotate(12deg); }
+      }
+      @keyframes drift5 {
+        0%   { transform: translate(0, 0) scale(1); }
+        33%  { transform: translate(-150px, -90px) scale(1.2); }
+        66%  { transform: translate(-90px, -170px) scale(0.88); }
+        100% { transform: translate(-200px, -40px) scale(1.05); }
+      }
+      @keyframes drift6 {
+        0%   { transform: translate(0, 0) scale(1); }
+        33%  { transform: translate(140px, -50px) scale(1.15); }
+        66%  { transform: translate(90px, -120px) scale(0.9); }
+        100% { transform: translate(180px, -90px) scale(1.08); }
+      }
+
+      .nav-actions img {
+        filter: brightness(0) invert(1);
+      }
+
+      /* 去掉封面圆角外的透明/晕边：圆角只放在容器上，图片略放大裁切 */
+      .cover-frame {
+        overflow: hidden;
+        border-radius: 5.15px;
+        isolation: isolate;
+        backface-visibility: hidden;
+      }
+      .cover-frame > img,
+      .expand-cover > img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transform: scale(1.08);
+        transform-origin: center center;
+      }
+
+      .cover-stack-trigger {
+        cursor: pointer;
+        pointer-events: auto;
+      }
+      .cover-stack-trigger:focus-visible {
+        outline: 2px solid rgba(255, 255, 255, 0.6);
+        outline-offset: 4px;
+        border-radius: 8px;
+      }
+
+      .ui-fade-out {
+        transition: opacity 0.45s ease;
+      }
+      .screen.is-expanded .ui-fade-out {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+      }
+      .screen.is-collapsing.is-expanded .ui-fade-out {
+        opacity: 1;
+        pointer-events: none;
+        transition: opacity 0.45s ease 0.28s;
+      }
+      .hero-area {
+        transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .screen.is-expanded .hero-area {
+        height: 812px;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .screen.is-expanded .hero-area .hero-fade {
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+      .screen.is-expanded #cover-stack {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+      }
+      .screen.is-expanded.is-collapsing .hero-area {
+        height: 355px;
+      }
+      .screen.is-expanded.is-collapsing .hero-area .hero-fade {
+        opacity: 1;
+        transition: opacity 0.45s ease 0.2s;
+      }
+      .screen.is-collapsing.is-expanded #cover-stack {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .screen.is-expanded .top-chrome {
+        z-index: 30;
+      }
+
+      /* 展开态：透明层，背景沿用 hero 流体色块 */
+      .expanded-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        background: transparent;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .screen.is-expanded .expanded-layer {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+      .screen.is-collapsing.is-expanded .expanded-layer {
+        pointer-events: none;
+      }
+
+      .expanded-close {
+        position: absolute;
+        top: 65px;
+        right: 16px;
+        z-index: 50;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      .expanded-close img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .nav-back {
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      .screen.is-expanded .expanded-close {
+        opacity: 0.8;
+        visibility: visible;
+        pointer-events: auto;
+      }
+      .screen.is-expanded .nav-back {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .screen.is-collapsing.is-expanded .expanded-close {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      .screen.is-expanded .nav-actions {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s ease;
+      }
+      .screen.is-collapsing.is-expanded .nav-actions {
+        opacity: 1;
+        transition: opacity 0.4s ease 0.3s;
+      }
+
+      .expand-cover {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 144px;
+        height: 144px;
+        transform-origin: center center;
+        border-radius: 5px;
+        overflow: hidden;
+        transition: transform 0.85s cubic-bezier(0.33, 1.02, 0.54, 1);
+        transition-delay: calc(var(--i) * 0.08s);
+        will-change: transform;
+      }
+      .expand-cover img {
+        pointer-events: none;
+      }
+
+      #expand-texts {
+        position: absolute;
+        left: 187px;
+        top: 169px;
+        width: 172px;
+        display: flex;
+        flex-direction: column;
+        gap: 85px;
+        pointer-events: none;
+      }
+
+      .expand-song-text {
+        position: relative;
+        width: 100%;
+        flex-shrink: 0;
+        opacity: 0;
+        transform: translateX(12px);
+        transition: opacity 0.55s ease, transform 0.55s ease;
+        transition-delay: calc(0.32s + var(--i) * 0.1s);
+        pointer-events: none;
+      }
+      .screen.is-expanded .expand-song-text {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .screen.is-collapsing.is-expanded .expand-song-text {
+        opacity: 0;
+        transform: translateX(10px);
+        transition-delay: calc(var(--i) * 0.05s);
+      }
+      .expand-song-text .expand-title {
+        margin: 0;
+        font-family: 'joox', sans-serif;
+        font-weight: 700;
+        font-size: 19px;
+        line-height: 21px;
+        color: #fff;
+      }
+      .expand-song-text .expand-artist {
+        margin: 6px 0 0;
+        font-family: 'joox', sans-serif;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 21px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .expand-cover,
+        .expand-song-text,
+        .ui-fade-out,
+        .expanded-close,
+        .hero-area,
+        .expanded-layer,
+        .nav-actions,
+        #cover-stack {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-viewport" id="app-viewport">
+    <div id="screen" class="screen relative w-[375px] h-[812px] overflow-hidden bg-[rgb(0,0,0)]">
+      <!-- Status Bar -->
+      <div class="top-chrome absolute left-[0px] top-[0px] z-[6] w-[375px] h-[44px] overflow-hidden">
+        <div class="absolute left-[108.5px] top-[-2px] z-[1] w-[0px] h-[0px]"></div>
+        <div class="absolute left-[25.5px] top-[13px] z-[2] w-[51.5px] h-[20px]">
+          <div class="absolute left-[0px] top-[0px] z-[1] w-[51.5px] h-[20px] rounded-[23.08px]">
+            <div class="absolute left-[0px] top-[0.5px] z-[1] text-[16.35px] font-[sf-pro-text] font-semibold leading-[21.15px] tracking-[-0.78px] text-[rgb(255,255,255)] items-start h-[19px] w-[51.5px] text-center min-w-0 whitespace-normal break-words">12:32</div>
+          </div>
+        </div>
+        <div class="absolute left-[275px] top-[18px] z-[3] w-[74px] h-[12.5px]">
+          <div class="absolute left-[48px] top-[0px] z-[1] w-[26px] h-[12.5px]">
+            <img src="./assets/Outline_bf6f93.svg" class="absolute left-[0px] top-[0px] z-[1] w-[24px] h-[12.5px] rounded-[3.85px] overflow-hidden" style="object-fit:cover" />
+            <img src="./assets/Battery_End_54440b.svg" class="absolute left-[25px] top-[4.5px] z-[2] w-[1px] h-[4px]" style="object-fit:cover" />
+            <img src="./assets/Fill_75b99d.svg" class="absolute left-[1.5px] top-[1.5px] z-[3] w-[20px] h-[8.5px] rounded-[1.92px] overflow-hidden" style="object-fit:cover" />
+          </div>
+          <img src="./assets/Wifi_abac0b.png" class="absolute left-[25px] top-[0.5px] z-[2] w-[16px] h-[11.5px]" style="object-fit:cover" />
+          <img src="./assets/Icon___Mobile_Signal_78f144.svg" class="absolute left-[0px] top-[0.5px] z-[3] w-[17px] h-[11.5px]" style="object-fit:cover" />
+        </div>
+      </div>
+
+      <!-- Header Nav Bar -->
+      <div class="top-chrome absolute left-[0px] top-[44px] z-[5] w-[375px] h-[44px]">
+        <div class="nav-back absolute left-[16px] top-[9.5px] z-[1] w-[24px] h-[24px]">
+          <img src="./assets/Rectangle_34624455_3405be.svg" class="absolute left-[5.5px] top-[3px] z-[1] w-[9px] h-[17.5px] rounded-tl-[1.97px] rounded-tr-[1.97px] rounded-bl-[0.61px] overflow-hidden" style="object-fit:cover" alt="" />
+        </div>
+        <div class="nav-actions absolute left-[247px] top-[10px] z-[2] flex box-border flex-shrink-0 flex-row justify-end items-center gap-x-[16px]">
+          <div class="relative flex-shrink-0 z-[1] w-[28px] h-[28px] overflow-hidden">
+            <div class="absolute left-[1px] top-[1px] z-[1] w-[26px] h-[26px]"></div>
+            <div class="absolute left-[3px] top-[4px] z-[2] w-[22px] h-[20px]">
+              <img src="./assets/Subtract_0b8788.svg" class="absolute left-[0px] top-[0px] z-[1] w-[22px] h-[20px]" style="object-fit:cover" />
+              <img src="./assets/路径_d1cfec.svg" class="absolute left-[7px] top-[9.5px] z-[2] w-[7.5px] h-[4px] rounded-tr-[1px] overflow-hidden" style="object-fit:cover" />
+              <img src="./assets/路径_2_ea5737.svg" class="absolute left-[10px] top-[0px] z-[3] w-[1.5px] h-[13.5px]" style="object-fit:cover" />
+            </div>
+          </div>
+          <img src="./assets/new_icon_share_60s_copy_519b8b.png" class="relative flex-shrink-0 z-[2] w-[28px] h-[28px]" style="object-fit:cover" />
+          <img src="./assets/new_icon_share_60s_copy_515f11.png" class="relative flex-shrink-0 z-[3] w-[24px] h-[24px]" style="object-fit:cover" />
+        </div>
+      </div>
+
+      <!-- Top Cover Area -->
+      <div class="hero-area absolute left-[0px] top-[0px] z-[2] w-[375px] h-[355px] overflow-hidden">
+        <div class="fluid-bg" style="z-index:1">
+          <div class="blob blob-1"></div>
+          <div class="blob blob-2"></div>
+          <div class="blob blob-3"></div>
+          <div class="blob blob-4"></div>
+          <div class="blob blob-5"></div>
+          <div class="blob blob-6"></div>
+        </div>
+        <div class="hero-fade absolute left-0 right-0 bottom-0 z-[2] h-[130px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.55)_55%,rgb(0,0,0)_100%)]"></div>
+        <div class="hero-fade absolute left-[0px] top-[0px] z-[3] w-[375px] h-[121.5px] transition-opacity duration-500 [background-image:linear-gradient(180deg,rgba(0,0,0,0.4)_0%,rgba(0,0,0,0)_100%)]"></div>
+        <!-- Stacked Album Covers -->
+        <div id="cover-stack" class="cover-stack-trigger absolute left-0 right-0 top-[108px] z-[4] flex justify-center" role="button" tabindex="0" aria-label="展开歌单">
+          <div class="relative w-[231.5px] h-[245px]">
+            <div class="cover-frame absolute left-1/2 top-[-8.5px] z-[1] w-[189.5px] h-[189.5px] -translate-x-1/2 pointer-events-none"><img data-stack-index="3" src="./assets/image_135_2bb4b7.png" class="stack-cover" alt="" /></div>
+            <div class="cover-frame absolute left-1/2 top-[-1.5px] z-[2] w-[205.5px] h-[205.5px] -translate-x-1/2 pointer-events-none"><img data-stack-index="2" src="./assets/image_134_6b5ee8.png" class="stack-cover" alt="" /></div>
+            <div class="cover-frame absolute left-1/2 top-[5.5px] z-[3] w-[219px] h-[219px] -translate-x-1/2 pointer-events-none"><img data-stack-index="1" src="./assets/image_133_90ab82.png" class="stack-cover" alt="" /></div>
+            <div class="cover-frame absolute left-1/2 top-[13px] z-[4] w-[231.5px] h-[231.5px] -translate-x-1/2 pointer-events-none"><img data-stack-index="0" src="./assets/image_132_4845b6.png" class="stack-cover" alt="" /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expanded playlist · Figma 9:5365 -->
+      <div id="expanded-layer" class="expanded-layer" aria-hidden="true">
+        <div id="expand-covers"></div>
+        <div id="expand-texts"></div>
+      </div>
+      <!-- 关闭钮须在 top-chrome(z-30) 之上，否则无法点击 -->
+      <button
+        type="button"
+        class="expanded-close"
+        aria-label="关闭"
+        id="expanded-close"
+        aria-hidden="true"
+      >
+        <img src="./assets/icon_close_circle.png" alt="" />
+      </button>
+
+      <!-- Playlist Info -->
+      <div class="ui-fade-out absolute left-[-0.5px] top-[358px] z-[4] w-[375px] h-[78px]">
+        <div class="absolute left-[16px] top-[1px] z-[1] w-[343.5px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[8px] overflow-hidden">
+          <div class="relative flex-shrink-0 z-[1] self-stretch text-[24px] font-[joox-sans-brand] font-extrabold leading-[28.8px] text-[rgb(255,255,255)] self-stretch items-start h-[29px] w-[343.5px] min-w-0 whitespace-normal break-words">Disc #1</div>
+          <div class="relative flex-shrink-0 z-[2] flex box-border flex-shrink-0 flex-row justify-center items-center gap-x-[2px]">
+            <div class="relative flex-shrink-0 z-[1] text-[12px] font-[joox] font-normal leading-[14.4px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[14px] w-[161px] whitespace-nowrap">Relive your summer listening </div>
+            <div class="relative flex-shrink-0 z-[2] w-[12px] h-[12px] opacity-[0.6000000238418579]">
+              <img src="./assets/Bounds_08b85d.png" class="absolute left-[0px] top-[0px] z-[1] w-[12px] h-[12px]" style="object-fit:cover" />
+              <img src="./assets/Combined_Shape_8eebe7.svg" class="absolute left-[4px] top-[2px] z-[2] w-[4px] h-[7px]" style="object-fit:cover" />
+            </div>
+          </div>
+          <div class="relative flex-shrink-0 z-[3] flex box-border flex-shrink-0 flex-row justify-center items-center gap-x-[6px]">
+            <div class="relative flex-shrink-0 z-[1] flex box-border flex-shrink-0 flex-row justify-center items-center gap-x-[5px]">
+              <img src="./assets/image_130_05ae0f.png" class="relative flex-shrink-0 z-[1] w-[14px] h-[14px]" style="object-fit:cover" />
+              <div class="relative flex-shrink-0 z-[2] text-[12px] font-[joox] font-normal leading-[18px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[18px] whitespace-nowrap">Christy's playlist</div>
+              <div class="relative flex-shrink-0 z-[3] text-[12px] font-[joox] font-normal leading-[14.4px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[14px] w-[117.5px] whitespace-nowrap"> · 100 songs · 2 hours</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="ui-fade-out absolute left-[-0.5px] top-[462px] z-[3] w-[375px] h-[40px]">
+        <div class="absolute left-[11.5px] top-[-2px] z-[1] w-[312.5px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[6.6px]">
+          <div class="relative flex-shrink-0 z-[1] w-[154.5px] h-[44px] flex box-border flex-shrink-0 flex-row justify-center items-center gap-x-[4.4px] py-[9.9px] px-[30.8px] rounded-[55px] bg-[rgba(255,255,255,0.12)]">
+            <div class="relative flex-shrink-0 z-[1] w-[19.5px] h-[19.5px]">
+              <img src="./assets/Path_1705f0.svg" class="absolute left-[5.5px] top-[3.5px] z-[1] w-[9px] h-[12px] rounded-[1.1px] overflow-hidden" style="object-fit:cover" />
+            </div>
+            <div class="relative flex-shrink-0 z-[2] text-[15.4px] font-[joox] font-bold leading-[19.8px] text-[rgb(74,240,127)] flex items-center justify-center h-[20px] w-[32px] whitespace-nowrap">Play</div>
+          </div>
+          <img src="./assets/Button72_Outline_Icon-Text_b8b4e3.png" class="relative flex-shrink-0 z-[2] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" />
+          <img src="./assets/Button72_Outline_Icon-Text_7a6c67.png" class="relative flex-shrink-0 z-[3] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" />
+          <img src="./assets/Button72_Outline_Icon-Text_e44573.png" class="relative flex-shrink-0 z-[4] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" />
+        </div>
+      </div>
+
+      <!-- Song List (static, hidden after expand) -->
+      <div id="song-list-static" class="ui-fade-out absolute left-[-0.5px] top-[523px] z-[1] w-[375px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[2px]">
+        <!-- Song 1: Delicate -->
+        <div class="relative flex-shrink-0 z-[1] self-stretch w-[375px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[26px] py-0 pl-[8px] pr-[16px] overflow-hidden">
+          <div class="relative flex-shrink-0 z-[1] w-[249px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+            <img src="./assets/image_132_d3ac74.png" class="relative flex-shrink-0 z-[1] w-[55px] h-[55px] rounded-[5px] overflow-hidden" style="object-fit:cover" alt="" />
+            <div class="relative flex-shrink-0 z-[2] flex-1 w-[202px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[4px]">
+              <div class="relative flex-shrink-0 z-[1] text-[14px] font-[joox] font-normal leading-[15px] text-[rgb(255,255,255)] flex items-center justify-start h-[15px] w-[53px] whitespace-nowrap">Delicate</div>
+              <div class="relative flex-shrink-0 z-[2] w-[243.5px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+                <div class="relative flex-shrink-0 z-[1] text-[12px] font-[joox] font-normal leading-[15px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[15px] w-[65.5px] whitespace-nowrap">Taylor Swift</div>
+                <div class="relative flex-shrink-0 z-[2] w-[29.5px] h-[13px]">
+                  <img src="./assets/Rectangle_7_db6ad8.svg" class="absolute inset-0 z-[1] h-full w-full rounded-[2px] object-cover" alt="" />
+                  <span class="absolute inset-0 z-[2] flex items-center justify-center text-[9px] font-[joox] font-normal leading-none text-[rgba(255,255,255,0.6)]">Hi-Fi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img src="./assets/Frame_1765_be264e.png" class="relative flex-shrink-0 z-[2] w-[68px] h-[24px]" style="object-fit:cover" />
+        </div>
+
+        <!-- Song 2: Cruel Summer -->
+        <div class="relative flex-shrink-0 z-[2] self-stretch w-[375px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[26px] py-0 pl-[8px] pr-[16px] overflow-hidden">
+          <div class="relative flex-shrink-0 z-[1] w-[249px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+            <img src="./assets/image_132_6b5d08.png" class="relative flex-shrink-0 z-[1] w-[55px] h-[55px] rounded-[5px] overflow-hidden" style="object-fit:cover" alt="" />
+            <div class="relative flex-shrink-0 z-[2] flex-1 w-[202px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[4px]">
+              <div class="relative flex-shrink-0 z-[1] text-[14px] font-[joox] font-normal leading-[15px] text-[rgb(255,255,255)] flex items-center justify-start h-[15px] w-[113px] whitespace-nowrap">Cruel Summer</div>
+              <div class="relative flex-shrink-0 z-[2] w-[243.5px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+                <div class="relative flex-shrink-0 z-[1] text-[12px] font-[joox] font-normal leading-[15px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[15px] w-[63px] whitespace-nowrap">Taylor Swift</div>
+                <div class="relative flex-shrink-0 z-[2] w-[29.5px] h-[13px]">
+                  <img src="./assets/Rectangle_7_db6ad8.svg" class="absolute inset-0 z-[1] h-full w-full rounded-[2px] object-cover" alt="" />
+                  <span class="absolute inset-0 z-[2] flex items-center justify-center text-[9px] font-[joox] font-normal leading-none text-[rgba(255,255,255,0.6)]">Hi-Fi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img src="./assets/Frame_1765_be264e.png" class="relative flex-shrink-0 z-[2] w-[68px] h-[24px]" style="object-fit:cover" />
+        </div>
+
+        <!-- Song 3: The Prophecy -->
+        <div class="relative flex-shrink-0 z-[3] self-stretch w-[375px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[26px] py-0 pl-[8px] pr-[16px] overflow-hidden">
+          <div class="relative flex-shrink-0 z-[1] w-[249px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+            <img src="./assets/image_132_8c7830.png" class="relative flex-shrink-0 z-[1] w-[55px] h-[55px] rounded-[5px] overflow-hidden" style="object-fit:cover" alt="" />
+            <div class="relative flex-shrink-0 z-[2] flex-1 w-[202px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[4px]">
+              <div class="relative flex-shrink-0 z-[1] text-[14px] font-[joox] font-normal leading-[15px] text-[rgb(255,255,255)] flex items-center justify-start h-[15px] w-[155px] whitespace-nowrap">The Prophecy</div>
+              <div class="relative flex-shrink-0 z-[2] w-[243.5px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+                <div class="relative flex-shrink-0 z-[1] text-[12px] font-[joox] font-normal leading-[15px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[15px] w-[63px] whitespace-nowrap">Taylor Swift</div>
+                <div class="relative flex-shrink-0 z-[2] w-[29.5px] h-[13px]">
+                  <img src="./assets/Rectangle_7_db6ad8.svg" class="absolute inset-0 z-[1] h-full w-full rounded-[2px] object-cover" alt="" />
+                  <span class="absolute inset-0 z-[2] flex items-center justify-center text-[9px] font-[joox] font-normal leading-none text-[rgba(255,255,255,0.6)]">Hi-Fi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img src="./assets/Frame_1765_be264e.png" class="relative flex-shrink-0 z-[2] w-[68px] h-[24px]" style="object-fit:cover" />
+        </div>
+
+        <!-- Song 4: Tell Me Why -->
+        <div class="relative flex-shrink-0 z-[4] self-stretch w-[375px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[26px] py-0 pl-[8px] pr-[16px] overflow-hidden">
+          <div class="relative flex-shrink-0 z-[1] w-[249px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+            <img src="./assets/image_132_e86bfa.png" class="relative flex-shrink-0 z-[1] w-[55px] h-[55px] rounded-[5px] overflow-hidden" style="object-fit:cover" alt="" />
+            <div class="relative flex-shrink-0 z-[2] flex-1 w-[202px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[4px]">
+              <div class="relative flex-shrink-0 z-[1] text-[14px] font-[joox] font-normal leading-[15px] text-[rgb(255,255,255)] flex items-center justify-start h-[15px] w-[98px] whitespace-nowrap">Tell Me Why</div>
+              <div class="relative flex-shrink-0 z-[2] w-[243.5px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+                <div class="relative flex-shrink-0 z-[1] text-[12px] font-[joox] font-normal leading-[15px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[15px] w-[68.5px] whitespace-nowrap">The Weeknd</div>
+                <div class="relative flex-shrink-0 z-[2] w-[29.5px] h-[13px]">
+                  <img src="./assets/Rectangle_7_db6ad8.svg" class="absolute inset-0 z-[1] h-full w-full rounded-[2px] object-cover" alt="" />
+                  <span class="absolute inset-0 z-[2] flex items-center justify-center text-[9px] font-[joox] font-normal leading-none text-[rgba(255,255,255,0.6)]">Hi-Fi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img src="./assets/Frame_1765_be264e.png" class="relative flex-shrink-0 z-[2] w-[68px] h-[24px]" style="object-fit:cover" />
+        </div>
+
+        <!-- Song 5: Blank Space -->
+        <div class="relative flex-shrink-0 z-[5] self-stretch w-[375px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[26px] py-0 pl-[8px] pr-[16px] overflow-hidden">
+          <div class="relative flex-shrink-0 z-[1] w-[249px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+            <img src="./assets/image_139_blank_space.png" class="relative flex-shrink-0 z-[1] w-[55px] h-[55px] rounded-[5px] overflow-hidden" style="object-fit:cover" alt="" />
+            <div class="relative flex-shrink-0 z-[2] flex-1 w-[202px] flex box-border flex-shrink-0 flex-col justify-start items-start gap-y-[4px]">
+              <div class="relative flex-shrink-0 z-[1] text-[14px] font-[joox] font-normal leading-[15px] text-[rgb(255,255,255)] flex items-center justify-start h-[15px] w-[98px] whitespace-nowrap">Blank Space</div>
+              <div class="relative flex-shrink-0 z-[2] w-[243.5px] flex box-border flex-shrink-0 flex-row justify-start items-center gap-x-[6px]">
+                <div class="relative flex-shrink-0 z-[1] text-[12px] font-[joox] font-normal leading-[15px] text-[rgba(255,255,255,0.6)] flex items-center justify-start h-[15px] w-[68.5px] whitespace-nowrap">Taylor Swift</div>
+                <div class="relative flex-shrink-0 z-[2] w-[29.5px] h-[13px]">
+                  <img src="./assets/Rectangle_7_19bc20.svg" class="absolute inset-0 z-[1] h-full w-full rounded-[2px] object-cover" alt="" />
+                  <span class="absolute inset-0 z-[2] flex items-center justify-center text-[9px] font-[joox] font-normal leading-none text-[rgba(255,255,255,0.6)]">Hi-Fi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img src="./assets/Frame_1765_be264e.png" class="relative flex-shrink-0 z-[2] w-[68px] h-[24px]" style="object-fit:cover" />
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <script>
+      (function () {
+        var DESIGN_W = 375;
+        var DESIGN_H = 812;
+
+        function fitScreenToViewport() {
+          var screenEl = document.getElementById('screen');
+          if (!screenEl) return;
+          var vv = window.visualViewport;
+          var vw = vv ? vv.width : window.innerWidth;
+          var vh = vv ? vv.height : window.innerHeight;
+          var scale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
+          if (scale > 1) scale = 1;
+          screenEl.style.transform = 'scale(' + scale + ')';
+        }
+
+        fitScreenToViewport();
+        window.addEventListener('resize', fitScreenToViewport);
+        window.addEventListener('orientationchange', fitScreenToViewport);
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', fitScreenToViewport);
+        }
+
+        function bindTap(el, handler) {
+          if (!el) return;
+          var moved = false;
+          var touchHandled = false;
+          var startX = 0;
+          var startY = 0;
+          el.addEventListener(
+            'touchstart',
+            function (e) {
+              moved = false;
+              touchHandled = false;
+              var t = e.changedTouches[0];
+              startX = t.clientX;
+              startY = t.clientY;
+            },
+            { passive: true }
+          );
+          el.addEventListener(
+            'touchmove',
+            function (e) {
+              var t = e.changedTouches[0];
+              if (Math.abs(t.clientX - startX) > 10 || Math.abs(t.clientY - startY) > 10) {
+                moved = true;
+              }
+            },
+            { passive: true }
+          );
+          el.addEventListener('touchend', function (e) {
+            if (moved) return;
+            e.preventDefault();
+            touchHandled = true;
+            handler(e);
+            window.setTimeout(function () {
+              touchHandled = false;
+            }, 400);
+          });
+          el.addEventListener('click', function (e) {
+            if (touchHandled) {
+              e.preventDefault();
+              return;
+            }
+            handler(e);
+          });
+        }
+
+        /* Figma 9:5365 @1x（750 设计稿 ÷2） */
+        var SONGS = [
+          {
+            title: 'Delicate',
+            artist: 'Taylor Swift',
+            cover: './assets/image_132_4845b6.png',
+            stackIndex: 0,
+            tx: -16,
+            ty: 108,
+            rot: 12,
+          },
+          {
+            title: 'Cruel Summer',
+            artist: 'Taylor Swift',
+            cover: './assets/image_133_90ab82.png',
+            stackIndex: 1,
+            tx: -7,
+            ty: 250,
+            rot: -7.5,
+          },
+          {
+            title: 'The Prophecy',
+            artist: 'Taylor Swift',
+            cover: './assets/image_134_6b5ee8.png',
+            stackIndex: 2,
+            tx: 0,
+            ty: 389,
+            rot: 10,
+          },
+          {
+            title: 'Tell Me Why',
+            artist: 'The Weeknd',
+            cover: './assets/image_135_2bb4b7.png',
+            stackIndex: 3,
+            tx: 0,
+            ty: 518,
+            rot: -7,
+          },
+          {
+            title: 'Blank Space',
+            artist: 'Taylor Swift',
+            cover: './assets/image_139_blank_space_expand.png',
+            stackIndex: null,
+            tx: -18,
+            ty: 650,
+            rot: 5.5,
+          },
+        ];
+
+        var COVER_SIZE = 144;
+        var COVER_TRANSITION_EXPAND = 'transform 0.85s cubic-bezier(0.33, 1.02, 0.54, 1)';
+        var COVER_TRANSITION_COLLAPSE = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+        var COVER_MS = 800;
+        var STAGGER_MS = 80;
+        var screen = document.getElementById('screen');
+        var coverStack = document.getElementById('cover-stack');
+        var expandedLayer = document.getElementById('expanded-layer');
+        var expandCovers = document.getElementById('expand-covers');
+        var expandTexts = document.getElementById('expand-texts');
+        var expandedClose = document.getElementById('expanded-close');
+        var expanded = false;
+        var collapsing = false;
+
+        function buildExpandDOM() {
+          expandCovers.innerHTML = '';
+          expandTexts.innerHTML = '';
+          SONGS.forEach(function (song, i) {
+            var cover = document.createElement('div');
+            cover.className = 'expand-cover';
+            cover.style.setProperty('--i', String(i));
+            cover.style.zIndex = String(SONGS.length - i);
+            cover.innerHTML = '<img src="' + song.cover + '" alt="' + song.title + '">';
+            expandCovers.appendChild(cover);
+
+            var text = document.createElement('div');
+            text.className = 'expand-song-text';
+            text.style.setProperty('--i', String(i));
+            text.innerHTML =
+              '<p class="expand-title">' + song.title + '</p>' +
+              '<p class="expand-artist">' + song.artist + '</p>';
+            expandTexts.appendChild(text);
+          });
+        }
+
+        function getStackRect(index) {
+          var key = index === null ? '0' : String(index);
+          var img = document.querySelector('.stack-cover[data-stack-index="' + key + '"]');
+          var frame = img && img.closest('.cover-frame');
+          var el = frame || img;
+          return el ? el.getBoundingClientRect() : null;
+        }
+
+        function stackTransform(song, screenRect, half) {
+          var from = getStackRect(song.stackIndex);
+          if (!from) {
+            from = {
+              left: screenRect.left + screenRect.width / 2 - half,
+              top: screenRect.top + 200,
+              width: COVER_SIZE,
+              height: COVER_SIZE,
+            };
+          }
+          return {
+            x: from.left + from.width / 2 - screenRect.left - half,
+            y: from.top + from.height / 2 - screenRect.top - half,
+            scale: Math.max(from.width / COVER_SIZE, from.height / COVER_SIZE),
+          };
+        }
+
+        function animateCoversExpand() {
+          var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var screenRect = screen.getBoundingClientRect();
+          var covers = expandCovers.querySelectorAll('.expand-cover');
+          var half = COVER_SIZE / 2;
+
+          covers.forEach(function (coverEl, i) {
+            var song = SONGS[i];
+            var stack = stackTransform(song, screenRect, half);
+
+            coverEl.style.transition = reducedMotion ? 'none' : COVER_TRANSITION_EXPAND;
+            coverEl.style.transitionDelay = reducedMotion ? '0ms' : i * STAGGER_MS + 'ms';
+
+            if (reducedMotion) {
+              coverEl.style.transform =
+                'translate(' + song.tx + 'px,' + song.ty + 'px) rotate(' + song.rot + 'deg)';
+              return;
+            }
+
+            coverEl.style.transform =
+              'translate(' + stack.x + 'px,' + stack.y + 'px) scale(' + stack.scale + ') rotate(0deg)';
+
+            requestAnimationFrame(function () {
+              requestAnimationFrame(function () {
+                coverEl.style.transform =
+                  'translate(' + song.tx + 'px,' + song.ty + 'px) rotate(' + song.rot + 'deg)';
+              });
+            });
+          });
+        }
+
+        function animateCoversCollapse(done) {
+          var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (reducedMotion) {
+            done();
+            return;
+          }
+
+          var screenRect = screen.getBoundingClientRect();
+          var covers = expandCovers.querySelectorAll('.expand-cover');
+          var half = COVER_SIZE / 2;
+          var n = SONGS.length;
+          var pending = covers.length;
+          var coversFinished = false;
+
+          function coversComplete() {
+            if (coversFinished) return;
+            coversFinished = true;
+            done();
+          }
+
+          function coverDone() {
+            pending -= 1;
+            if (pending === 0) coversComplete();
+          }
+
+          covers.forEach(function (coverEl, i) {
+            var song = SONGS[i];
+            var stack = stackTransform(song, screenRect, half);
+            var reverseDelay = (n - 1 - i) * STAGGER_MS;
+
+            coverEl.style.transition = COVER_TRANSITION_COLLAPSE;
+            coverEl.style.transitionDelay = reverseDelay + 'ms';
+
+            function onEnd(e) {
+              if (e.propertyName !== 'transform') return;
+              coverEl.removeEventListener('transitionend', onEnd);
+              coverDone();
+            }
+            coverEl.addEventListener('transitionend', onEnd);
+
+            requestAnimationFrame(function () {
+              requestAnimationFrame(function () {
+                coverEl.style.transform =
+                  'translate(' + stack.x + 'px,' + stack.y + 'px) scale(' + stack.scale + ') rotate(0deg)';
+              });
+            });
+          });
+
+          setTimeout(coversComplete, COVER_MS + (n - 1) * STAGGER_MS + 120);
+        }
+
+        function finishCollapse() {
+          coverStack.style.transition = 'none';
+          screen.classList.remove('is-expanded', 'is-collapsing');
+          expandedLayer.setAttribute('aria-hidden', 'true');
+          expandedClose.setAttribute('aria-hidden', 'true');
+          expandCovers.innerHTML = '';
+          expandTexts.innerHTML = '';
+          coverStack.offsetHeight;
+          resetCollapseStyles();
+          expanded = false;
+          collapsing = false;
+          expandedClose.disabled = false;
+          coverStack.style.pointerEvents = '';
+        }
+
+        function resetCollapseStyles() {
+          var heroArea = document.querySelector('.hero-area');
+          coverStack.style.transition = '';
+          coverStack.style.opacity = '';
+          coverStack.style.visibility = '';
+          coverStack.style.pointerEvents = '';
+          if (heroArea) heroArea.style.transition = '';
+        }
+
+        function startHeroCollapse() {
+          var heroArea = document.querySelector('.hero-area');
+          if (!heroArea) return;
+          var collapseDuration = COVER_MS + (SONGS.length - 1) * STAGGER_MS;
+          heroArea.style.transition =
+            'height ' + collapseDuration + 'ms cubic-bezier(0.4, 0, 0.2, 1)';
+        }
+
+        function expandPlaylist() {
+          if (expanded || collapsing) return;
+          expanded = true;
+          buildExpandDOM();
+          expandedLayer.setAttribute('aria-hidden', 'false');
+          expandedClose.setAttribute('aria-hidden', 'false');
+          screen.classList.add('is-expanded');
+          animateCoversExpand();
+        }
+
+        function collapsePlaylist() {
+          if (!expanded || collapsing) return;
+          collapsing = true;
+          expandedClose.disabled = true;
+          coverStack.style.pointerEvents = 'none';
+
+          startHeroCollapse();
+          screen.classList.add('is-collapsing');
+
+          animateCoversCollapse(finishCollapse);
+        }
+
+        bindTap(coverStack, function () {
+          expandPlaylist();
+        });
+        coverStack.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            expandPlaylist();
+          }
+        });
+        bindTap(expandedClose, function (e) {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          collapsePlaylist();
+        });
+      })();
+    </script>
+  </body>
+</html>
