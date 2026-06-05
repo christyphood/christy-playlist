@@ -1338,7 +1338,8 @@
             // 亮色云团：位移幅度与脉冲幅度下调
             var rhythm = Math.min(1, energy * 0.95 + beatPulse * 0.12);
             // 律动瞬间速度再慢一点点（beatPulse 影响更小）
-            var speed = 0.05 + rhythm * 0.11 + beatPulse * 0.015;
+            // 律动瞬间速度：整体再慢一点点
+            var speed = 0.043 + rhythm * 0.085 + beatPulse * 0.01;
             var amp = 50 + rhythm * 58 + beatPulse * 18;
             var t = performance.now() / 1000;
             // 可见云团数量也更克制，避免“闪动感”由层切换造成
@@ -1455,6 +1456,10 @@
           if (index < 0 || index >= SONGS.length) return;
           var song = SONGS[index];
           var hasAudio = !!(song.audio || song.audioBase);
+          var isLastSong = index === SONGS.length - 1;
+
+          // 最后一首：保持原本慢速浮动，不跟随律动
+          if (isLastSong) stopBlobRhythm();
 
           if (playlistAudio && nowPlayingIndex === index && playlistAudio.src) {
             if (!playlistAudio.paused) {
@@ -1465,7 +1470,7 @@
             }
             setNowPlaying(index);
             playlistAudio.play().catch(function () {});
-            startBlobRhythm();
+            if (!isLastSong) startBlobRhythm();
             return;
           }
 
@@ -1486,7 +1491,7 @@
             'playing',
             function onPlaying() {
               playlistAudio.removeEventListener('playing', onPlaying);
-              startBlobRhythm();
+              if (!isLastSong) startBlobRhythm();
             }
           );
         }
