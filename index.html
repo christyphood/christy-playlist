@@ -1238,6 +1238,11 @@
           var bassAvg = 0;
           var lastBeatAt = 0;
           var visibleCount = 6;
+          var visibleCountFloat = 4;
+          var energySmooth = 0;
+          var beatSmooth = 0;
+          var speedSmooth = 0.055;
+          var ampSmooth = 58;
           var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
           var BLOB_PHASES = [
@@ -1334,16 +1339,20 @@
             var bands = readBands();
             var energy = bands.bass * 0.55 + bands.mid * 0.3 + bands.high * 0.15;
             detectBeat(bands.bass);
+            energySmooth = energySmooth * 0.88 + energy * 0.12;
+            beatSmooth = beatSmooth * 0.86 + beatPulse * 0.14;
 
-            // 亮色云团：位移幅度与脉冲幅度下调
-            var rhythm = Math.min(1, energy * 0.95 + beatPulse * 0.12);
-            // 律动瞬间速度再慢一点点（beatPulse 影响更小）
-            // 律动瞬间速度：整体再慢一点点
-            var speed = 0.043 + rhythm * 0.085 + beatPulse * 0.01;
-            var amp = 50 + rhythm * 58 + beatPulse * 18;
+            // 亮色云团：使用平滑节奏参数，避免卡顿/闪动
+            var rhythm = Math.min(1, energySmooth * 0.95 + beatSmooth * 0.12);
+            var speedTarget = 0.043 + rhythm * 0.085 + beatSmooth * 0.01;
+            var ampTarget = 50 + rhythm * 58 + beatSmooth * 18;
+            speedSmooth = speedSmooth * 0.9 + speedTarget * 0.1;
+            ampSmooth = ampSmooth * 0.9 + ampTarget * 0.1;
             var t = performance.now() / 1000;
             // 可见云团数量也更克制，避免“闪动感”由层切换造成
-            var count = targetBlobCount(energy + beatPulse * 0.03);
+            var countTarget = targetBlobCount(energySmooth + beatSmooth * 0.03);
+            visibleCountFloat = visibleCountFloat * 0.9 + countTarget * 0.1;
+            var count = Math.max(3, Math.min(6, Math.round(visibleCountFloat)));
 
             updateVisibility(count);
 
@@ -1354,9 +1363,9 @@
               }
               blob.style.opacity = rhythmBlobOpacity(blob);
               var cfg = BLOB_PHASES[i] || BLOB_PHASES[0];
-              var layerSpeed = speed * cfg.speedMul;
-              var rx = amp * cfg.orbitRx;
-              var ry = amp * cfg.orbitRy;
+              var layerSpeed = speedSmooth * cfg.speedMul;
+              var rx = ampSmooth * cfg.orbitRx;
+              var ry = ampSmooth * cfg.orbitRy;
               var ox = cfg.ax || 0;
               var oy = cfg.ay || 0;
               var x =
@@ -1367,7 +1376,7 @@
                 oy +
                 Math.cos(t * layerSpeed * 0.78 + cfg.phase * 1.2) * ry +
                 Math.sin(t * layerSpeed * 0.48 + cfg.phase * 0.8) * ry * 0.65;
-              var scale = 1 + rhythm * 0.045 + beatPulse * 0.015;
+              var scale = 1 + rhythm * 0.045 + beatSmooth * 0.015;
               var rot = Math.sin(t * layerSpeed * 0.35 + cfg.phase) * (2.6 + rhythm * 2.4);
               blob.style.transform =
                 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
@@ -1406,6 +1415,11 @@
               blob.style.opacity = '';
             });
             beatPulse = 0;
+            beatSmooth = 0;
+            energySmooth = 0;
+            speedSmooth = 0.055;
+            ampSmooth = 58;
+            visibleCountFloat = 4;
             bassAvg = 0;
           }
 
