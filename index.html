@@ -99,8 +99,15 @@
         position: absolute;
         inset: -52.5px -40px -120px;
         background: #D57100;
-        -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-        mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      }
+      .hero-area::after {
+        content: '';
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 6px;
+        background: #000;
+        z-index: 5;
+        pointer-events: none;
       }
       .fluid-bg .blob {
         position: absolute;
