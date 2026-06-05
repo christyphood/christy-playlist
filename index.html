@@ -97,8 +97,7 @@
 
       .fluid-bg {
         position: absolute;
-        /* 向外扩展，避免 blur 在裁切边界形成亮边；绘制高度 460px */
-        inset: -52.5px -40px;
+        inset: -52.5px -40px -120px;
         background: #D57100;
       }
       .fluid-bg .blob {
@@ -669,7 +668,7 @@
           <div class="blob blob-5"></div>
           <div class="blob blob-6"></div>
         </div>
-        <div class="hero-fade absolute left-0 right-0 bottom-[-2px] z-[2] h-[130px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.55)_55%,rgb(0,0,0)_100%)]"></div>
+        <div class="hero-fade absolute left-0 right-0 bottom-[-2px] z-[2] h-[150px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.5)_45%,rgba(0,0,0,0.85)_75%,rgb(0,0,0)_100%)]"></div>
         <div class="hero-fade absolute left-[-0.5px] top-0 z-[3] w-[375px] h-[121.5px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0.4)_0%,rgba(0,0,0,0)_100%)]"></div>
         <!-- Stacked Album Covers -->
         <div id="cover-stack" class="cover-stack-trigger absolute left-0 right-0 top-[108px] z-[4] flex justify-center" role="button" tabindex="0" aria-label="展开歌单">
