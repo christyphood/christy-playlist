@@ -90,11 +90,21 @@
           top: max(65px, calc(env(safe-area-inset-top) + 52px));
           right: max(16px, env(safe-area-inset-right));
         }
+        .expanded-podcast-btn {
+          top: max(65px, calc(env(safe-area-inset-top) + 52px));
+          right: max(72px, calc(env(safe-area-inset-right) + 56px));
+        }
         .cover-stack-trigger {
           touch-action: manipulation;
         }
       }
 
+      .hero-bg-clip {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 1;
+      }
       .fluid-bg {
         position: absolute;
         inset: -52.5px -40px -120px;
@@ -103,9 +113,10 @@
       .hero-area::after {
         content: '';
         position: absolute;
-        left: 0; right: 0; bottom: 0;
-        height: 6px;
-        background: #000;
+        left: 0; right: 0; bottom: -6px;
+        height: 8px;
+        background: #000000;
+        box-shadow: 0 8px 0 0 #000000;
         z-index: 5;
         pointer-events: none;
       }
@@ -113,7 +124,6 @@
         position: absolute;
         filter: blur(42px);
         will-change: transform;
-        animation: none !important;
       }
       /* 亮珊瑚 · 右上 */
       .fluid-bg .blob-1 {
@@ -168,6 +178,61 @@
         top: 80px; right: 40px;
         opacity: 0.92;
         animation: drift6 14s ease-in-out infinite alternate, morph3 15s ease-in-out infinite;
+      }
+      .fluid-bg .blob-7,
+      .fluid-bg .blob-8,
+      .fluid-bg .blob-9,
+      .fluid-bg .blob-10 {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.45s ease;
+      }
+      .fluid-bg .blob-7 {
+        width: 200px; height: 150px;
+        background: #FFB347;
+        border-radius: 50% 45% 55% 50% / 45% 55% 50% 50%;
+        top: 200px; left: 50%;
+        margin-left: -100px;
+        animation: morph2 13s ease-in-out infinite;
+      }
+      .fluid-bg .blob-8 {
+        width: 170px; height: 120px;
+        background: #C44B00;
+        border-radius: 55% 45% 50% 50% / 50% 50% 45% 55%;
+        top: 320px; right: -20px;
+        animation: morph1 11s ease-in-out infinite;
+      }
+      .fluid-bg .blob-9 {
+        width: 190px; height: 140px;
+        background: #FFE0A8;
+        border-radius: 45% 55% 45% 55% / 55% 45% 55% 45%;
+        top: 420px; left: -60px;
+        opacity: 0;
+        animation: morph3 12s ease-in-out infinite;
+      }
+      .fluid-bg .blob-10 {
+        width: 160px; height: 110px;
+        background: #6B1500;
+        border-radius: 50% 50% 45% 55% / 55% 45% 50% 50%;
+        top: 500px; right: 30px;
+        animation: morph2 14s ease-in-out infinite;
+      }
+      .fluid-bg.is-rhythm-active .blob:not(.blob-dark) {
+        animation: none !important;
+      }
+      .fluid-bg.is-rhythm-active .blob.is-rhythm-visible {
+        animation: morph1 12s ease-in-out infinite !important;
+      }
+      .fluid-bg.is-rhythm-active .blob-2.is-rhythm-visible,
+      .fluid-bg.is-rhythm-active .blob-5.is-rhythm-visible,
+      .fluid-bg.is-rhythm-active .blob-8.is-rhythm-visible,
+      .fluid-bg.is-rhythm-active .blob-10.is-rhythm-visible {
+        animation: morph2 12s ease-in-out infinite !important;
+      }
+      .fluid-bg.is-rhythm-active .blob-3.is-rhythm-visible,
+      .fluid-bg.is-rhythm-active .blob-6.is-rhythm-visible,
+      .fluid-bg.is-rhythm-active .blob-9.is-rhythm-visible {
+        animation: morph3 12s ease-in-out infinite !important;
       }
 
       @keyframes morph1 {
@@ -385,23 +450,59 @@
         height: 32px;
         padding: 0;
         border: none;
-        background: transparent;
+        border-radius: 50%;
+        background: #EAB67C;
+        color: #D77A0F;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
         transition: opacity 0.35s ease, visibility 0.35s ease;
       }
-      .expanded-close img {
+      .expanded-close svg {
         display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
+        width: 14px;
+        height: 14px;
+      }
+      .expanded-podcast-btn {
+        position: absolute;
+        top: 65px;
+        right: 56px;
+        z-index: 50;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 32px;
+        padding: 0 12px 0 10px;
+        border: none;
+        border-radius: 999px;
+        background: #EAB67C;
+        color: #D77A0F;
+        font-family: 'joox', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      .expanded-podcast-btn svg {
+        display: block;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
       }
       .nav-back {
         transition: opacity 0.35s ease, visibility 0.35s ease;
       }
-      .screen.is-expanded .expanded-close {
+      .screen.is-expanded .expanded-close,
+      .screen.is-expanded .expanded-podcast-btn {
         opacity: 0.8;
         visibility: visible;
         pointer-events: auto;
@@ -411,7 +512,8 @@
         visibility: hidden;
         pointer-events: none;
       }
-      .screen.is-collapsing.is-expanded .expanded-close {
+      .screen.is-collapsing.is-expanded .expanded-close,
+      .screen.is-collapsing.is-expanded .expanded-podcast-btn {
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.2s ease;
@@ -610,6 +712,7 @@
         .expand-song-text,
         .ui-fade-out,
         .expanded-close,
+        .expanded-podcast-btn,
         .hero-area,
         .expanded-layer,
         .nav-actions,
@@ -668,14 +771,20 @@
       </div>
 
       <!-- Top Cover Area -->
-      <div class="hero-area absolute left-[0px] top-[0px] z-[2] w-[375px] h-[355px] overflow-hidden">
-        <div class="fluid-bg" style="z-index:1">
-          <div class="blob blob-1"></div>
-          <div class="blob blob-2"></div>
-          <div class="blob blob-3"></div>
-          <div class="blob blob-4"></div>
-          <div class="blob blob-5"></div>
-          <div class="blob blob-6"></div>
+      <div class="hero-area absolute left-[0px] top-[0px] z-[2] w-[375px] h-[355px]">
+        <div class="hero-bg-clip">
+          <div class="fluid-bg" id="fluid-bg">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2 blob-dark"></div>
+            <div class="blob blob-3"></div>
+            <div class="blob blob-4 blob-dark"></div>
+            <div class="blob blob-5"></div>
+            <div class="blob blob-6 blob-dark"></div>
+            <div class="blob blob-7"></div>
+            <div class="blob blob-8"></div>
+            <div class="blob blob-9"></div>
+            <div class="blob blob-10 blob-dark"></div>
+          </div>
         </div>
         <div class="hero-fade absolute left-0 right-0 bottom-[-2px] z-[2] h-[150px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.5)_45%,rgba(0,0,0,0.85)_75%,rgb(0,0,0)_100%)]"></div>
         <div class="hero-fade absolute left-[-0.5px] top-0 z-[3] w-[375px] h-[121.5px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0.4)_0%,rgba(0,0,0,0)_100%)]"></div>
@@ -703,12 +812,28 @@
       <!-- 关闭钮须在 top-chrome(z-30) 之上，否则无法点击 -->
       <button
         type="button"
+        class="expanded-podcast-btn"
+        aria-label="Podcast"
+        id="expanded-podcast-btn"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M1.5 2.5h3.2l0.3 11h-3.5z" fill="currentColor" />
+          <rect x="6.4" y="2.5" width="3.2" height="11" rx="0.2" fill="currentColor" />
+          <path d="M11.3 2.5h3.2l-0.3 11h-3.5z" fill="currentColor" />
+        </svg>
+        <span>Podcast</span>
+      </button>
+      <button
+        type="button"
         class="expanded-close"
         aria-label="关闭"
         id="expanded-close"
         aria-hidden="true"
       >
-        <img src="./assets/icon_close_circle.png" alt="" />
+        <svg viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2.5 2.5l9 9M11.5 2.5l-9 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" />
+        </svg>
       </button>
 
       <!-- Playlist Info -->
@@ -741,7 +866,7 @@
             </div>
             <div class="relative flex-shrink-0 z-[2] text-[15.4px] font-[joox] font-bold leading-[19.8px] text-[rgb(74,240,127)] flex items-center justify-center h-[20px] w-[32px] whitespace-nowrap">Play</div>
           </div>
-          <img src="./assets/Button72_Outline_Icon-Text_b8b4e3.png" class="relative flex-shrink-0 z-[2] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" />
+          <img id="random-btn" src="./assets/Button72_Outline_Icon-Text_b8b4e3.png" class="relative flex-shrink-0 z-[2] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" role="button" tabindex="0" aria-label="随机播放" />
           <img src="./assets/Button72_Outline_Icon-Text_7a6c67.png" class="relative flex-shrink-0 z-[3] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" />
           <img src="./assets/Button72_Outline_Icon-Text_e44573.png" class="relative flex-shrink-0 z-[4] w-[44px] h-[44px] rounded-[55px] overflow-hidden" style="object-fit:cover" />
         </div>
@@ -932,7 +1057,7 @@
             title: 'Delicate',
             artist: 'Taylor Swift',
             cover: './assets/expand-covers/01-delicate.png',
-            audioBase: '01-delicate',
+            audio: './songs/1.mp3',
             stackIndex: 0,
             tx: -10,
             ty: 108,
@@ -942,7 +1067,7 @@
             title: 'Cruel Summer',
             artist: 'Taylor Swift',
             cover: './assets/expand-covers/02-cruel-summer.png',
-            audioBase: '02-cruel-summer',
+            audio: './songs/2.mp3',
             stackIndex: 1,
             tx: -10,
             ty: 248,
@@ -952,7 +1077,7 @@
             title: 'The Prophecy',
             artist: 'Taylor Swift',
             cover: './assets/expand-covers/03-the-prophecy.png',
-            audioBase: '03-the-prophecy',
+            audio: './songs/3.mp3',
             stackIndex: 2,
             tx: -10,
             ty: 388,
@@ -962,7 +1087,7 @@
             title: 'Tell Me Why',
             artist: 'The Weeknd',
             cover: './assets/expand-covers/04-tell-me-why.png',
-            audioBase: '04-tell-me-why',
+            audio: './songs/4.mp3',
             stackIndex: 3,
             tx: -10,
             ty: 528,
@@ -972,7 +1097,7 @@
             title: 'Blank Space',
             artist: 'Taylor Swift',
             cover: './assets/expand-covers/05-blank-space.png',
-            audioBase: '05-blank-space',
+            audio: './songs/5.mp3',
             stackIndex: null,
             tx: -10,
             ty: 668,
@@ -1044,10 +1169,13 @@
         var expandCovers = document.getElementById('expand-covers');
         var expandTexts = document.getElementById('expand-texts');
         var expandedClose = document.getElementById('expanded-close');
+        var expandedPodcastBtn = document.getElementById('expanded-podcast-btn');
         var expandScrollViewport = document.getElementById('expand-scroll-viewport');
         var expandTopBlur = document.getElementById('expand-top-blur');
         var playlistAudio = document.getElementById('playlist-audio');
+        var fluidBg = document.getElementById('fluid-bg');
         var mainPlayBtn = document.getElementById('main-play-btn');
+        var randomBtn = document.getElementById('random-btn');
         var expanded = false;
         var collapsing = false;
         var expandScrollRaf = 0;
@@ -1083,6 +1211,7 @@
         }
 
         function songAudioCandidates(song) {
+          if (song.audio) return [song.audio];
           if (!song.audioBase) return [];
           return [
             './assets/audio/' + song.audioBase + '.mp3',
@@ -1095,6 +1224,203 @@
           playlistAudio.pause();
           playlistAudio.removeAttribute('src');
           playlistAudio.load();
+          stopBlobRhythm();
+        }
+
+        var blobRhythm = (function () {
+          var audioCtx = null;
+          var analyser = null;
+          var sourceNode = null;
+          var freqData = null;
+          var rafId = 0;
+          var blobs = [];
+          var beatPulse = 0;
+          var bassAvg = 0;
+          var lastBeatAt = 0;
+          var visibleCount = 6;
+          var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+          var BLOB_PHASES = [
+            { phase: 0, speedMul: 1.0, orbitRx: 1.05, orbitRy: 1.35, ax: 55, ay: 210 },
+            { phase: 1.6, speedMul: 0.9, orbitRx: 1.1, orbitRy: 1.4, ax: 360, ay: 260 },
+            { phase: 3.1, speedMul: 0.95, orbitRx: 1.0, orbitRy: 1.45, ax: 90, ay: -400 },
+            { phase: 4.5, speedMul: 1.05, orbitRx: 1.08, orbitRy: 1.3, ax: 130, ay: 320 },
+            { phase: 2.2, speedMul: 0.88, orbitRx: 1.12, orbitRy: 1.25, ax: 70, ay: 180 },
+            { phase: 5.8, speedMul: 1.1, orbitRx: 1.06, orbitRy: 1.38, ax: 310, ay: 120 },
+          ];
+
+          function ensureAudioGraph() {
+            if (!playlistAudio || audioCtx) return;
+            var Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            audioCtx = new Ctx();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 512;
+            analyser.smoothingTimeConstant = 0.82;
+            freqData = new Uint8Array(analyser.frequencyBinCount);
+            sourceNode = audioCtx.createMediaElementSource(playlistAudio);
+            sourceNode.connect(analyser);
+            analyser.connect(audioCtx.destination);
+          }
+
+          function readBands() {
+            analyser.getByteFrequencyData(freqData);
+            var len = freqData.length;
+            var bass = 0;
+            var mid = 0;
+            var high = 0;
+            var bassEnd = Math.max(4, Math.floor(len * 0.08));
+            var midEnd = Math.max(bassEnd + 1, Math.floor(len * 0.35));
+            var i;
+            for (i = 0; i < bassEnd; i++) bass += freqData[i];
+            for (i = bassEnd; i < midEnd; i++) mid += freqData[i];
+            for (i = midEnd; i < len; i++) high += freqData[i];
+            bass /= bassEnd;
+            mid /= midEnd - bassEnd;
+            high /= len - midEnd;
+            return { bass: bass / 255, mid: mid / 255, high: high / 255 };
+          }
+
+          function detectBeat(bass) {
+            bassAvg = bassAvg * 0.96 + bass * 0.04;
+            var now = performance.now();
+            if (bass > bassAvg * 1.3 + 0.08 && now - lastBeatAt > 360) {
+              lastBeatAt = now;
+              beatPulse = 0.4;
+            }
+            beatPulse *= 0.72;
+            if (beatPulse < 0.03) beatPulse = 0;
+          }
+
+          function targetBlobCount(energy) {
+            if (energy < 0.24) return 4;
+            if (energy < 0.42) return 5;
+            if (energy < 0.62) return 6;
+            return 7;
+          }
+
+          function rhythmBlobOpacity(blob) {
+            // 亮色云团：播放时整体透明度更低，减少“闪/跳”的观感
+            if (blob.classList.contains('blob-3')) return '0.48';
+            if (blob.classList.contains('blob-5')) return '0.54';
+            if (blob.classList.contains('blob-7')) return '0.62';
+            if (blob.classList.contains('blob-8')) return '0.56';
+            if (blob.classList.contains('blob-9')) return '0.52';
+            return '0.6';
+          }
+
+          function updateVisibility(count) {
+            if (count === visibleCount) return;
+            visibleCount = count;
+            blobs.forEach(function (blob, i) {
+              var show = i < count;
+              blob.classList.toggle('is-rhythm-visible', show);
+              blob.style.opacity = show ? rhythmBlobOpacity(blob) : '0';
+            });
+          }
+
+          function tick() {
+            rafId = 0;
+            if (!expanded || !fluidBg || !analyser || !playlistAudio || playlistAudio.paused) {
+              stop();
+              return;
+            }
+
+            if (audioCtx && audioCtx.state === 'suspended') {
+              audioCtx.resume();
+            }
+
+            var bands = readBands();
+            var energy = bands.bass * 0.55 + bands.mid * 0.3 + bands.high * 0.15;
+            detectBeat(bands.bass);
+
+            // 亮色云团：位移幅度与脉冲幅度下调
+            var rhythm = Math.min(1, energy * 0.95 + beatPulse * 0.12);
+            var speed = 0.06 + rhythm * 0.14 + beatPulse * 0.02;
+            var amp = 55 + rhythm * 70 + beatPulse * 25;
+            var t = performance.now() / 1000;
+            // 可见云团数量也更克制，避免“闪动感”由层切换造成
+            var count = targetBlobCount(energy + beatPulse * 0.05);
+
+            updateVisibility(count);
+
+            blobs.forEach(function (blob, i) {
+              if (i >= count) {
+                blob.style.opacity = '0';
+                return;
+              }
+              blob.style.opacity = rhythmBlobOpacity(blob);
+              var cfg = BLOB_PHASES[i] || BLOB_PHASES[0];
+              var layerSpeed = speed * cfg.speedMul;
+              var rx = amp * cfg.orbitRx;
+              var ry = amp * cfg.orbitRy;
+              var ox = cfg.ax || 0;
+              var oy = cfg.ay || 0;
+              var x =
+                ox +
+                Math.sin(t * layerSpeed + cfg.phase) * rx +
+                Math.cos(t * layerSpeed * 0.62 + cfg.phase * 1.4) * rx * 0.55;
+              var y =
+                oy +
+                Math.cos(t * layerSpeed * 0.78 + cfg.phase * 1.2) * ry +
+                Math.sin(t * layerSpeed * 0.48 + cfg.phase * 0.8) * ry * 0.65;
+              var scale = 1 + rhythm * 0.05 + beatPulse * 0.02;
+              var rot = Math.sin(t * layerSpeed * 0.35 + cfg.phase) * (3 + rhythm * 3);
+              blob.style.transform =
+                'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
+            });
+
+            rafId = requestAnimationFrame(tick);
+          }
+
+          function start() {
+            if (reducedMotion || !fluidBg || !expanded) return;
+            ensureAudioGraph();
+            if (!analyser) return;
+            if (audioCtx && audioCtx.state === 'suspended') {
+              audioCtx.resume();
+            }
+            if (!blobs.length) {
+              blobs = Array.prototype.slice.call(
+                fluidBg.querySelectorAll('.blob:not(.blob-dark)')
+              );
+            }
+            fluidBg.classList.add('is-rhythm-active');
+            if (!rafId) rafId = requestAnimationFrame(tick);
+          }
+
+          function stop() {
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = 0;
+            }
+            if (!fluidBg) return;
+            fluidBg.classList.remove('is-rhythm-active');
+            visibleCount = 6;
+            blobs.forEach(function (blob) {
+              blob.classList.remove('is-rhythm-visible');
+              blob.style.transform = '';
+              blob.style.opacity = '';
+            });
+            beatPulse = 0;
+            bassAvg = 0;
+          }
+
+          if (playlistAudio) {
+            playlistAudio.addEventListener('play', start);
+            playlistAudio.addEventListener('pause', stop);
+            playlistAudio.addEventListener('ended', stop);
+          }
+
+          return { start: start, stop: stop };
+        })();
+
+        function stopBlobRhythm() {
+          blobRhythm.stop();
+        }
+
+        function startBlobRhythm() {
+          blobRhythm.start();
         }
 
         function tryPlayAudioSource(src, onFail) {
@@ -1116,22 +1442,33 @@
           }
         }
 
+        function clearNowPlaying() {
+          if (!expandTexts) return;
+          expandTexts.querySelectorAll('.expand-song-text').forEach(function (textEl) {
+            textEl.classList.remove('is-playing');
+          });
+        }
+
         function playSongAtIndex(index) {
           if (index < 0 || index >= SONGS.length) return;
           var song = SONGS[index];
+          var hasAudio = !!(song.audio || song.audioBase);
 
           if (playlistAudio && nowPlayingIndex === index && playlistAudio.src) {
             if (!playlistAudio.paused) {
               playlistAudio.pause();
+              clearNowPlaying();
+              stopBlobRhythm();
               return;
             }
             setNowPlaying(index);
             playlistAudio.play().catch(function () {});
+            startBlobRhythm();
             return;
           }
 
           setNowPlaying(index);
-          if (!playlistAudio || !song.audioBase) return;
+          if (!playlistAudio || !hasAudio) return;
 
           var candidates = songAudioCandidates(song);
           var attempt = 0;
@@ -1143,6 +1480,13 @@
           }
 
           tryNext();
+          playlistAudio.addEventListener(
+            'playing',
+            function onPlaying() {
+              playlistAudio.removeEventListener('playing', onPlaying);
+              startBlobRhythm();
+            }
+          );
         }
 
         function bindExpandSongInteractions() {
@@ -1437,11 +1781,13 @@
         }
 
         function finishCollapse() {
+          stopBlobRhythm();
           stopPlaylistAudio();
           coverStack.style.transition = 'none';
           screen.classList.remove('is-expanded', 'is-collapsing');
           expandedLayer.setAttribute('aria-hidden', 'true');
           expandedClose.setAttribute('aria-hidden', 'true');
+          if (expandedPodcastBtn) expandedPodcastBtn.setAttribute('aria-hidden', 'true');
           resetExpandScroll();
           expandCovers.innerHTML = '';
           expandTexts.innerHTML = '';
@@ -1450,6 +1796,7 @@
           expanded = false;
           collapsing = false;
           expandedClose.disabled = false;
+          if (expandedPodcastBtn) expandedPodcastBtn.disabled = false;
           coverStack.style.pointerEvents = '';
         }
 
@@ -1475,10 +1822,11 @@
           expanded = true;
           buildExpandDOM();
           bindExpandSongInteractions();
-          setNowPlaying(0);
+          playSongAtIndex(0);
           resetExpandScroll();
           expandedLayer.setAttribute('aria-hidden', 'false');
           expandedClose.setAttribute('aria-hidden', 'false');
+          if (expandedPodcastBtn) expandedPodcastBtn.setAttribute('aria-hidden', 'false');
           screen.classList.add('is-expanded');
           animateCoversExpand();
         }
@@ -1489,6 +1837,7 @@
           if (!expanded || collapsing) return;
           collapsing = true;
           expandedClose.disabled = true;
+          if (expandedPodcastBtn) expandedPodcastBtn.disabled = true;
           coverStack.style.pointerEvents = 'none';
 
           if (expandScrollViewport) expandScrollViewport.scrollTop = 0;
@@ -1538,6 +1887,18 @@
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               playSongAtIndex(nowPlayingIndex);
+            }
+          });
+        }
+
+        if (randomBtn) {
+          bindTap(randomBtn, function () {
+            expandPlaylist();
+          });
+          randomBtn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              expandPlaylist();
             }
           });
         }
