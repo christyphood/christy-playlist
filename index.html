@@ -97,14 +97,15 @@
 
       .fluid-bg {
         position: absolute;
-        inset: 0;
-        overflow: hidden;
+        /* 向外扩展，避免 blur 在裁切边界形成亮边；绘制高度 460px */
+        inset: -52.5px -40px;
         background: #D57100;
       }
       .fluid-bg .blob {
         position: absolute;
         filter: blur(42px);
         will-change: transform;
+        animation: none !important;
       }
       /* 亮珊瑚 · 右上 */
       .fluid-bg .blob-1 {
@@ -129,8 +130,8 @@
         width: 200px; height: 160px;
         background: #FFF4DC;
         border-radius: 55% 45% 50% 50% / 40% 60% 45% 55%;
-        top: 60px; left: -50px;
-        opacity: 0.45;
+        top: 60px; left: -200px;
+        opacity: 0.3;
         animation: drift3 11s ease-in-out infinite alternate, morph3 13s ease-in-out infinite;
       }
       /* 艳橙 · 左下 */
@@ -307,6 +308,57 @@
         visibility: hidden;
         pointer-events: none;
       }
+      .expand-scroll-viewport {
+        position: absolute;
+        inset: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+      }
+      .expand-scroll-viewport::-webkit-scrollbar {
+        display: none;
+      }
+      .screen.is-expanded .expand-scroll-viewport {
+        touch-action: pan-y;
+      }
+      .expand-scroll-content {
+        position: relative;
+        width: 375px;
+        min-height: 812px;
+        height: 1540px;
+      }
+      .expand-top-blur {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 25;
+        width: 375px;
+        height: 120px;
+        pointer-events: none;
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.26) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          #000 0%,
+          rgba(0, 0, 0, 0.6) 55%,
+          transparent 100%
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          #000 0%,
+          rgba(0, 0, 0, 0.6) 55%,
+          transparent 100%
+        );
+        transition: opacity 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease;
+      }
       .screen.is-expanded .expanded-layer {
         opacity: 1;
         visibility: visible;
@@ -379,6 +431,29 @@
         transition-delay: calc(var(--i) * 0.08s);
         will-change: transform;
       }
+      .expand-cover-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        overflow: hidden;
+      }
+      .screen.is-expanded .expand-cover:not(.expand-cover-extra).is-settled .expand-cover-inner,
+      .screen.is-expanded .expand-cover-extra.is-settled.is-extra-visible .expand-cover-inner {
+        animation: expand-cover-float 4.2s ease-in-out infinite;
+        animation-delay: calc(var(--i) * 0.35s);
+      }
+      .expand-cover-extra {
+        opacity: 0;
+        transition: opacity 0.55s ease !important;
+        transition-delay: calc(var(--i) * 0.1s) !important;
+      }
+      .expand-cover-extra.is-extra-visible {
+        opacity: 1;
+      }
+      @keyframes expand-cover-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
       .expand-cover img {
         pointer-events: none;
       }
@@ -393,6 +468,9 @@
         gap: 85px;
         pointer-events: none;
       }
+      .screen.is-expanded #expand-texts {
+        pointer-events: auto;
+      }
 
       .expand-song-text {
         position: relative;
@@ -404,14 +482,103 @@
         transition-delay: calc(0.32s + var(--i) * 0.1s);
         pointer-events: none;
       }
-      .screen.is-expanded .expand-song-text {
+      .screen.is-expanded .expand-song-text:not(.expand-song-text-extra),
+      .screen.is-expanded .expand-song-text-extra.is-extra-visible {
+        pointer-events: auto;
+        cursor: pointer;
+      }
+      .screen.is-expanded .expand-cover {
+        pointer-events: auto;
+        cursor: pointer;
+      }
+      .screen.is-expanded .expand-song-text:not(.expand-song-text-extra) {
         opacity: 1;
         transform: translateX(0);
       }
-      .screen.is-collapsing.is-expanded .expand-song-text {
+      .expand-song-text-extra {
+        opacity: 0;
+        transform: translateX(10px);
+        transition: opacity 0.55s ease, transform 0.55s ease;
+        transition-delay: calc(var(--i) * 0.1s);
+      }
+      .expand-song-text-extra.is-extra-visible {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .screen.is-collapsing.is-expanded .expand-song-text:not(.expand-song-text-extra) {
         opacity: 0;
         transform: translateX(10px);
         transition-delay: calc(var(--i) * 0.05s);
+      }
+      .screen.is-collapsing.is-expanded .expand-song-text-extra {
+        opacity: 0;
+        transform: translateX(10px);
+        transition-delay: 0ms;
+      }
+      /* 第一首歌名 + 播放 icon：在 #expand-texts 首项内，歌名右侧 8px */
+      .expand-title-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        min-height: 21px;
+      }
+      .expand-title-row .expand-title {
+        margin: 0;
+        flex: 0 1 auto;
+        min-width: 0;
+      }
+      .expand-now-playing {
+        display: none;
+        flex: 0 0 auto;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 14px;
+        height: 14px;
+        gap: 2px;
+      }
+      .expand-song-text.is-playing .expand-now-playing {
+        display: inline-flex;
+      }
+      .expand-eq-bar {
+        display: block;
+        width: 2px;
+        border-radius: 1px;
+        background: #fff;
+        transform-origin: center bottom;
+        will-change: transform;
+      }
+      .expand-eq-bar:nth-child(1) {
+        height: 7px;
+        animation: expand-eq-1 0.85s ease-in-out infinite;
+      }
+      .expand-eq-bar:nth-child(2) {
+        height: 14px;
+        animation: expand-eq-2 0.72s ease-in-out infinite;
+      }
+      .expand-eq-bar:nth-child(3) {
+        height: 10px;
+        animation: expand-eq-3 0.95s ease-in-out infinite;
+      }
+      .expand-eq-bar:nth-child(4) {
+        height: 5px;
+        animation: expand-eq-4 0.8s ease-in-out infinite;
+      }
+      @keyframes expand-eq-1 {
+        0%, 100% { transform: scaleY(0.55); }
+        50% { transform: scaleY(1); }
+      }
+      @keyframes expand-eq-2 {
+        0%, 100% { transform: scaleY(0.45); }
+        50% { transform: scaleY(1); }
+      }
+      @keyframes expand-eq-3 {
+        0%, 100% { transform: scaleY(0.5); }
+        50% { transform: scaleY(1); }
+      }
+      @keyframes expand-eq-4 {
+        0%, 100% { transform: scaleY(0.4); }
+        50% { transform: scaleY(1); }
       }
       .expand-song-text .expand-title {
         margin: 0;
@@ -440,6 +607,13 @@
         .nav-actions,
         #cover-stack {
           transition: none !important;
+        }
+        .screen.is-expanded .expand-cover.is-settled .expand-cover-inner,
+        .expand-eq-bar {
+          animation: none !important;
+        }
+        .expand-eq-bar {
+          transform: scaleY(0.7);
         }
       }
     </style>
@@ -495,8 +669,8 @@
           <div class="blob blob-5"></div>
           <div class="blob blob-6"></div>
         </div>
-        <div class="hero-fade absolute left-0 right-0 bottom-0 z-[2] h-[130px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.55)_55%,rgb(0,0,0)_100%)]"></div>
-        <div class="hero-fade absolute left-[0px] top-[0px] z-[3] w-[375px] h-[121.5px] transition-opacity duration-500 [background-image:linear-gradient(180deg,rgba(0,0,0,0.4)_0%,rgba(0,0,0,0)_100%)]"></div>
+        <div class="hero-fade absolute left-0 right-0 bottom-[-2px] z-[2] h-[130px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.55)_55%,rgb(0,0,0)_100%)]"></div>
+        <div class="hero-fade absolute left-[-0.5px] top-0 z-[3] w-[375px] h-[121.5px] transition-opacity duration-500 [background:linear-gradient(180deg,rgba(0,0,0,0.4)_0%,rgba(0,0,0,0)_100%)]"></div>
         <!-- Stacked Album Covers -->
         <div id="cover-stack" class="cover-stack-trigger absolute left-0 right-0 top-[108px] z-[4] flex justify-center" role="button" tabindex="0" aria-label="展开歌单">
           <div class="relative w-[231.5px] h-[245px]">
@@ -510,8 +684,13 @@
 
       <!-- Expanded playlist · Figma 9:5365 -->
       <div id="expanded-layer" class="expanded-layer" aria-hidden="true">
-        <div id="expand-covers"></div>
-        <div id="expand-texts"></div>
+        <div class="expand-top-blur" id="expand-top-blur" aria-hidden="true"></div>
+        <div class="expand-scroll-viewport" id="expand-scroll-viewport">
+          <div class="expand-scroll-content" id="expand-scroll-content">
+            <div id="expand-covers"></div>
+            <div id="expand-texts"></div>
+          </div>
+        </div>
       </div>
       <!-- 关闭钮须在 top-chrome(z-30) 之上，否则无法点击 -->
       <button
@@ -548,7 +727,7 @@
       <!-- Action Buttons -->
       <div class="ui-fade-out absolute left-[-0.5px] top-[462px] z-[3] w-[375px] h-[40px]">
         <div class="absolute left-[11.5px] top-[-2px] z-[1] w-[312.5px] flex box-border flex-shrink-0 flex-row justify-between items-center gap-x-[6.6px]">
-          <div class="relative flex-shrink-0 z-[1] w-[154.5px] h-[44px] flex box-border flex-shrink-0 flex-row justify-center items-center gap-x-[4.4px] py-[9.9px] px-[30.8px] rounded-[55px] bg-[rgba(255,255,255,0.12)]">
+          <div id="main-play-btn" class="relative flex-shrink-0 z-[1] w-[154.5px] h-[44px] flex box-border flex-shrink-0 flex-row justify-center items-center gap-x-[4.4px] py-[9.9px] px-[30.8px] rounded-[55px] bg-[rgba(255,255,255,0.12)]" role="button" tabindex="0" aria-label="播放">
             <div class="relative flex-shrink-0 z-[1] w-[19.5px] h-[19.5px]">
               <img src="./assets/Path_1705f0.svg" class="absolute left-[5.5px] top-[3.5px] z-[1] w-[9px] h-[12px] rounded-[1.1px] overflow-hidden" style="object-fit:cover" />
             </div>
@@ -655,6 +834,8 @@
     </div>
     </div>
 
+    <audio id="playlist-audio" preload="none" playsinline></audio>
+
     <script>
       (function () {
         var DESIGN_W = 375;
@@ -723,52 +904,121 @@
           });
         }
 
-        /* Figma 9:5365 @1x（750 设计稿 ÷2） */
+        /*
+         * 展开封面布局（Figma 9:5365 @1x，750 稿 ÷2）
+         * | # | 歌曲           | tx   | ty   | rot   |
+         * tx：水平位移（px），均为 -10；ty：108 + (n-1)*140
+         * | 1 | Delicate       | -10  | 108  | 12    |
+         * | 2 | Cruel Summer   | -10  | 248  | -7.5  |
+         * | 3 | The Prophecy   | -10  | 388  | 12    |
+         * | 4 | Tell Me Why    | -10  | 528  | -7.5  |
+         * | 5 | Blank Space    | -10  | 668  | 12    |
+         * | 6 | Style          | -10  | 808  | -7.5  |
+         * | 7 | Shake It Off   | -10  | 948  | 12    |
+         * | 8 | Wildest Dreams | -10  | 1088 | -7.5  |
+         * | 9 | Anti-Hero      | -10  | 1228 | 12    |
+         * |10 | Cardigan       | -10  | 1368 | -7.5  |
+         */
         var SONGS = [
           {
             title: 'Delicate',
             artist: 'Taylor Swift',
-            cover: './assets/image_132_4845b6.png',
+            cover: './assets/expand-covers/01-delicate.png',
+            audioBase: '01-delicate',
             stackIndex: 0,
-            tx: -16,
+            tx: -10,
             ty: 108,
             rot: 12,
           },
           {
             title: 'Cruel Summer',
             artist: 'Taylor Swift',
-            cover: './assets/image_133_90ab82.png',
+            cover: './assets/expand-covers/02-cruel-summer.png',
+            audioBase: '02-cruel-summer',
             stackIndex: 1,
-            tx: -7,
-            ty: 250,
+            tx: -10,
+            ty: 248,
             rot: -7.5,
           },
           {
             title: 'The Prophecy',
             artist: 'Taylor Swift',
-            cover: './assets/image_134_6b5ee8.png',
+            cover: './assets/expand-covers/03-the-prophecy.png',
+            audioBase: '03-the-prophecy',
             stackIndex: 2,
-            tx: 0,
-            ty: 389,
-            rot: 10,
+            tx: -10,
+            ty: 388,
+            rot: 12,
           },
           {
             title: 'Tell Me Why',
             artist: 'The Weeknd',
-            cover: './assets/image_135_2bb4b7.png',
+            cover: './assets/expand-covers/04-tell-me-why.png',
+            audioBase: '04-tell-me-why',
             stackIndex: 3,
-            tx: 0,
-            ty: 518,
-            rot: -7,
+            tx: -10,
+            ty: 528,
+            rot: -7.5,
           },
           {
             title: 'Blank Space',
             artist: 'Taylor Swift',
-            cover: './assets/image_139_blank_space_expand.png',
+            cover: './assets/expand-covers/05-blank-space.png',
+            audioBase: '05-blank-space',
             stackIndex: null,
-            tx: -18,
-            ty: 650,
-            rot: 5.5,
+            tx: -10,
+            ty: 668,
+            rot: 12,
+          },
+          {
+            title: 'Style',
+            artist: 'Taylor Swift',
+            cover: './assets/expand-covers/06-style.png',
+            audioBase: '06-style',
+            stackIndex: null,
+            tx: -10,
+            ty: 808,
+            rot: -7.5,
+          },
+          {
+            title: 'Shake It Off',
+            artist: 'Taylor Swift',
+            cover: './assets/expand-covers/07-shake-it-off.png',
+            audioBase: '07-shake-it-off',
+            stackIndex: null,
+            tx: -10,
+            ty: 948,
+            rot: 12,
+          },
+          {
+            title: 'Wildest Dreams',
+            artist: 'Taylor Swift',
+            cover: './assets/expand-covers/08-wildest-dreams.png',
+            audioBase: '08-wildest-dreams',
+            stackIndex: null,
+            tx: -10,
+            ty: 1088,
+            rot: -7.5,
+          },
+          {
+            title: 'Anti-Hero',
+            artist: 'Taylor Swift',
+            cover: './assets/expand-covers/09-anti-hero.png',
+            audioBase: '09-anti-hero',
+            stackIndex: null,
+            tx: -10,
+            ty: 1228,
+            rot: 12,
+          },
+          {
+            title: 'Cardigan',
+            artist: 'Taylor Swift',
+            cover: './assets/expand-covers/10-cardigan.png',
+            audioBase: '10-cardigan',
+            stackIndex: null,
+            tx: -10,
+            ty: 1368,
+            rot: -7.5,
           },
         ];
 
@@ -777,34 +1027,212 @@
         var COVER_TRANSITION_COLLAPSE = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
         var COVER_MS = 800;
         var STAGGER_MS = 80;
+        var EXPAND_STACK_COUNT = 5;
+        var EXTRA_FADE_MS = 520;
+        var EXTRA_STAGGER_MS = 110;
         var screen = document.getElementById('screen');
         var coverStack = document.getElementById('cover-stack');
         var expandedLayer = document.getElementById('expanded-layer');
         var expandCovers = document.getElementById('expand-covers');
         var expandTexts = document.getElementById('expand-texts');
         var expandedClose = document.getElementById('expanded-close');
+        var expandScrollViewport = document.getElementById('expand-scroll-viewport');
+        var expandTopBlur = document.getElementById('expand-top-blur');
+        var playlistAudio = document.getElementById('playlist-audio');
+        var mainPlayBtn = document.getElementById('main-play-btn');
         var expanded = false;
         var collapsing = false;
+        var expandScrollRaf = 0;
+        var nowPlayingIndex = 0;
+
+        var NOW_PLAYING_ICON_HTML =
+          '<span class="expand-now-playing" aria-label="正在播放">' +
+          '<span class="expand-eq-bar"></span>' +
+          '<span class="expand-eq-bar"></span>' +
+          '<span class="expand-eq-bar"></span>' +
+          '<span class="expand-eq-bar"></span>' +
+          '</span>';
+
+        function buildTitleRow(title) {
+          return (
+            '<div class="expand-title-row">' +
+            '<p class="expand-title">' +
+            title +
+            '</p>' +
+            NOW_PLAYING_ICON_HTML +
+            '</div>'
+          );
+        }
+
+        function setNowPlaying(index) {
+          if (index < 0 || index >= SONGS.length) return;
+          nowPlayingIndex = index;
+          if (!expandTexts) return;
+          expandTexts.querySelectorAll('.expand-song-text').forEach(function (textEl) {
+            var i = parseInt(textEl.dataset.songIndex, 10);
+            textEl.classList.toggle('is-playing', i === index);
+          });
+        }
+
+        function songAudioCandidates(song) {
+          if (!song.audioBase) return [];
+          return [
+            './assets/audio/' + song.audioBase + '.mp3',
+            './assets/audio/' + song.audioBase + '.m4a',
+          ];
+        }
+
+        function stopPlaylistAudio() {
+          if (!playlistAudio) return;
+          playlistAudio.pause();
+          playlistAudio.removeAttribute('src');
+          playlistAudio.load();
+        }
+
+        function tryPlayAudioSource(src, onFail) {
+          if (!playlistAudio) return;
+          playlistAudio.addEventListener(
+            'error',
+            function onErr() {
+              playlistAudio.removeEventListener('error', onErr);
+              onFail();
+            }
+          );
+          playlistAudio.src = src;
+          playlistAudio.load();
+          var p = playlistAudio.play();
+          if (p && typeof p.then === 'function') {
+            p.catch(function () {
+              onFail();
+            });
+          }
+        }
+
+        function playSongAtIndex(index) {
+          if (index < 0 || index >= SONGS.length) return;
+          var song = SONGS[index];
+
+          if (playlistAudio && nowPlayingIndex === index && playlistAudio.src) {
+            if (!playlistAudio.paused) {
+              playlistAudio.pause();
+              return;
+            }
+            setNowPlaying(index);
+            playlistAudio.play().catch(function () {});
+            return;
+          }
+
+          setNowPlaying(index);
+          if (!playlistAudio || !song.audioBase) return;
+
+          var candidates = songAudioCandidates(song);
+          var attempt = 0;
+
+          function tryNext() {
+            if (attempt >= candidates.length) return;
+            var src = candidates[attempt++];
+            tryPlayAudioSource(src, tryNext);
+          }
+
+          tryNext();
+        }
+
+        function bindExpandSongInteractions() {
+          expandTexts.querySelectorAll('.expand-song-text').forEach(function (textEl) {
+            var i = parseInt(textEl.dataset.songIndex, 10);
+            bindTap(textEl, function (e) {
+              if (e) e.stopPropagation();
+              playSongAtIndex(i);
+            });
+            textEl.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                playSongAtIndex(i);
+              }
+            });
+          });
+
+          expandCovers.querySelectorAll('.expand-cover').forEach(function (coverEl) {
+            var i = parseInt(coverEl.dataset.songIndex, 10);
+            bindTap(coverEl, function (e) {
+              if (e) e.stopPropagation();
+              playSongAtIndex(i);
+            });
+          });
+        }
 
         function buildExpandDOM() {
           expandCovers.innerHTML = '';
           expandTexts.innerHTML = '';
           SONGS.forEach(function (song, i) {
+            var isExtra = i >= EXPAND_STACK_COUNT;
             var cover = document.createElement('div');
-            cover.className = 'expand-cover';
-            cover.style.setProperty('--i', String(i));
+            cover.className = 'expand-cover' + (isExtra ? ' expand-cover-extra' : '');
+            cover.dataset.songIndex = String(i);
+            cover.style.setProperty('--i', String(isExtra ? i - EXPAND_STACK_COUNT : i));
+            cover.style.setProperty('--tx', song.tx + 'px');
+            cover.style.setProperty('--ty', song.ty + 'px');
+            cover.style.setProperty('--rot', song.rot + 'deg');
             cover.style.zIndex = String(SONGS.length - i);
-            cover.innerHTML = '<img src="' + song.cover + '" alt="' + song.title + '">';
+            cover.innerHTML =
+              '<div class="expand-cover-inner"><img src="' +
+              song.cover +
+              '" alt="' +
+              song.title +
+              '"></div>';
+            if (isExtra) {
+              cover.style.transform = coverTransform(song, 0);
+            }
             expandCovers.appendChild(cover);
 
             var text = document.createElement('div');
-            text.className = 'expand-song-text';
-            text.style.setProperty('--i', String(i));
-            text.innerHTML =
-              '<p class="expand-title">' + song.title + '</p>' +
-              '<p class="expand-artist">' + song.artist + '</p>';
+            text.className = 'expand-song-text' + (isExtra ? ' expand-song-text-extra' : '');
+            text.dataset.songIndex = String(i);
+            text.setAttribute('role', 'button');
+            text.setAttribute('tabindex', '0');
+            text.setAttribute('aria-label', '播放 ' + song.title);
+            text.style.setProperty('--i', String(isExtra ? i - EXPAND_STACK_COUNT : i));
+            text.innerHTML = buildTitleRow(song.title) + '<p class="expand-artist">' + song.artist + '</p>';
             expandTexts.appendChild(text);
           });
+        }
+
+        function getStackCovers() {
+          var list = [];
+          expandCovers.querySelectorAll('.expand-cover').forEach(function (el) {
+            if (parseInt(el.dataset.songIndex, 10) < EXPAND_STACK_COUNT) list.push(el);
+          });
+          return list;
+        }
+
+        function hideExtraItems() {
+          expandCovers.querySelectorAll('.expand-cover-extra').forEach(function (el) {
+            el.classList.remove('is-extra-visible', 'is-settled');
+          });
+          expandTexts.querySelectorAll('.expand-song-text-extra').forEach(function (el) {
+            el.classList.remove('is-extra-visible');
+          });
+        }
+
+        function animateExtrasFadeIn() {
+          var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var extraCovers = expandCovers.querySelectorAll('.expand-cover-extra');
+          var extraTexts = expandTexts.querySelectorAll('.expand-song-text-extra');
+
+          extraCovers.forEach(function (coverEl, i) {
+            var reveal = function () {
+              coverEl.classList.add('is-extra-visible', 'is-settled');
+              if (extraTexts[i]) extraTexts[i].classList.add('is-extra-visible');
+              if (i === extraCovers.length - 1) updateExpandScrollFx();
+            };
+            if (reducedMotion) {
+              reveal();
+              return;
+            }
+            window.setTimeout(reveal, i * EXTRA_STAGGER_MS);
+          });
+
+          if (reducedMotion && extraCovers.length) updateExpandScrollFx();
         }
 
         function getStackRect(index) {
@@ -832,13 +1260,84 @@
           };
         }
 
+        function coverTransform(song, parallaxY) {
+          var y = song.ty - (parallaxY || 0);
+          return 'translate(' + song.tx + 'px,' + y + 'px) rotate(' + song.rot + 'deg)';
+        }
+
+        function markStackCoversSettled() {
+          getStackCovers().forEach(function (coverEl) {
+            coverEl.classList.add('is-settled');
+          });
+        }
+
+        function updateExpandScrollFx() {
+          if (!expandScrollViewport || !expanded) return;
+          var scrollTop = expandScrollViewport.scrollTop;
+          var blurAmount = Math.min(12, scrollTop * 0.05);
+          var blurOpacity = Math.min(0.45, scrollTop / 160);
+
+          if (expandTopBlur) {
+            expandTopBlur.style.opacity = String(blurOpacity);
+            expandTopBlur.style.backdropFilter = 'blur(' + blurAmount + 'px)';
+            expandTopBlur.style.webkitBackdropFilter = 'blur(' + blurAmount + 'px)';
+          }
+
+          expandCovers.querySelectorAll('.expand-cover').forEach(function (coverEl, i) {
+            var song = SONGS[i];
+            var depth = 0.06 + (i % 3) * 0.02;
+            var parallaxY = scrollTop * depth;
+            if (coverEl.classList.contains('is-settled')) {
+              coverEl.style.transition = 'none';
+            }
+            coverEl.style.transform = coverTransform(song, parallaxY);
+          });
+        }
+
+        function onExpandScroll() {
+          if (expandScrollRaf) return;
+          expandScrollRaf = requestAnimationFrame(function () {
+            expandScrollRaf = 0;
+            updateExpandScrollFx();
+          });
+        }
+
+        function bindExpandScroll() {
+          if (!expandScrollViewport) return;
+          expandScrollViewport.addEventListener('scroll', onExpandScroll, { passive: true });
+        }
+
+        function resetExpandScroll() {
+          if (expandScrollViewport) expandScrollViewport.scrollTop = 0;
+          if (expandTopBlur) {
+            expandTopBlur.style.opacity = '0';
+            expandTopBlur.style.backdropFilter = 'blur(0px)';
+            expandTopBlur.style.webkitBackdropFilter = 'blur(0px)';
+          }
+          hideExtraItems();
+          getStackCovers().forEach(function (coverEl) {
+            coverEl.classList.remove('is-settled');
+          });
+        }
+
         function animateCoversExpand() {
           var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           var screenRect = screen.getBoundingClientRect();
-          var covers = expandCovers.querySelectorAll('.expand-cover');
+          var stackCovers = getStackCovers();
           var half = COVER_SIZE / 2;
+          var lastStackIndex = EXPAND_STACK_COUNT - 1;
+          var expandDone = false;
 
-          covers.forEach(function (coverEl, i) {
+          function finishStackExpand() {
+            if (expandDone) return;
+            expandDone = true;
+            markStackCoversSettled();
+            updateExpandScrollFx();
+            animateExtrasFadeIn();
+          }
+
+          stackCovers.forEach(function (coverEl) {
+            var i = parseInt(coverEl.dataset.songIndex, 10);
             var song = SONGS[i];
             var stack = stackTransform(song, screenRect, half);
 
@@ -846,35 +1345,48 @@
             coverEl.style.transitionDelay = reducedMotion ? '0ms' : i * STAGGER_MS + 'ms';
 
             if (reducedMotion) {
-              coverEl.style.transform =
-                'translate(' + song.tx + 'px,' + song.ty + 'px) rotate(' + song.rot + 'deg)';
+              coverEl.style.transform = coverTransform(song, 0);
               return;
             }
 
             coverEl.style.transform =
               'translate(' + stack.x + 'px,' + stack.y + 'px) scale(' + stack.scale + ') rotate(0deg)';
 
+            function onExpandEnd(e) {
+              if (e.propertyName !== 'transform') return;
+              coverEl.removeEventListener('transitionend', onExpandEnd);
+              if (i === lastStackIndex) finishStackExpand();
+            }
+            coverEl.addEventListener('transitionend', onExpandEnd);
+
             requestAnimationFrame(function () {
               requestAnimationFrame(function () {
-                coverEl.style.transform =
-                  'translate(' + song.tx + 'px,' + song.ty + 'px) rotate(' + song.rot + 'deg)';
+                coverEl.style.transform = coverTransform(song, 0);
               });
             });
           });
+
+          if (reducedMotion) {
+            finishStackExpand();
+            return;
+          }
+          window.setTimeout(finishStackExpand, COVER_MS + lastStackIndex * STAGGER_MS + 200);
         }
 
         function animateCoversCollapse(done) {
           var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          hideExtraItems();
+
           if (reducedMotion) {
             done();
             return;
           }
 
           var screenRect = screen.getBoundingClientRect();
-          var covers = expandCovers.querySelectorAll('.expand-cover');
+          var stackCovers = getStackCovers();
           var half = COVER_SIZE / 2;
-          var n = SONGS.length;
-          var pending = covers.length;
+          var n = EXPAND_STACK_COUNT;
+          var pending = stackCovers.length;
           var coversFinished = false;
 
           function coversComplete() {
@@ -888,11 +1400,13 @@
             if (pending === 0) coversComplete();
           }
 
-          covers.forEach(function (coverEl, i) {
+          stackCovers.forEach(function (coverEl) {
+            var i = parseInt(coverEl.dataset.songIndex, 10);
             var song = SONGS[i];
             var stack = stackTransform(song, screenRect, half);
             var reverseDelay = (n - 1 - i) * STAGGER_MS;
 
+            coverEl.classList.remove('is-settled');
             coverEl.style.transition = COVER_TRANSITION_COLLAPSE;
             coverEl.style.transitionDelay = reverseDelay + 'ms';
 
@@ -915,10 +1429,12 @@
         }
 
         function finishCollapse() {
+          stopPlaylistAudio();
           coverStack.style.transition = 'none';
           screen.classList.remove('is-expanded', 'is-collapsing');
           expandedLayer.setAttribute('aria-hidden', 'true');
           expandedClose.setAttribute('aria-hidden', 'true');
+          resetExpandScroll();
           expandCovers.innerHTML = '';
           expandTexts.innerHTML = '';
           coverStack.offsetHeight;
@@ -941,7 +1457,7 @@
         function startHeroCollapse() {
           var heroArea = document.querySelector('.hero-area');
           if (!heroArea) return;
-          var collapseDuration = COVER_MS + (SONGS.length - 1) * STAGGER_MS;
+          var collapseDuration = COVER_MS + (EXPAND_STACK_COUNT - 1) * STAGGER_MS;
           heroArea.style.transition =
             'height ' + collapseDuration + 'ms cubic-bezier(0.4, 0, 0.2, 1)';
         }
@@ -950,11 +1466,16 @@
           if (expanded || collapsing) return;
           expanded = true;
           buildExpandDOM();
+          bindExpandSongInteractions();
+          setNowPlaying(0);
+          resetExpandScroll();
           expandedLayer.setAttribute('aria-hidden', 'false');
           expandedClose.setAttribute('aria-hidden', 'false');
           screen.classList.add('is-expanded');
           animateCoversExpand();
         }
+
+        bindExpandScroll();
 
         function collapsePlaylist() {
           if (!expanded || collapsing) return;
@@ -962,10 +1483,26 @@
           expandedClose.disabled = true;
           coverStack.style.pointerEvents = 'none';
 
+          if (expandScrollViewport) expandScrollViewport.scrollTop = 0;
+          if (expandTopBlur) {
+            expandTopBlur.style.opacity = '0';
+            expandTopBlur.style.backdropFilter = 'blur(0px)';
+            expandTopBlur.style.webkitBackdropFilter = 'blur(0px)';
+          }
+          hideExtraItems();
+          getStackCovers().forEach(function (coverEl) {
+            var i = parseInt(coverEl.dataset.songIndex, 10);
+            coverEl.classList.remove('is-settled');
+            coverEl.style.transition = 'none';
+            coverEl.style.transform = coverTransform(SONGS[i], 0);
+          });
+
           startHeroCollapse();
           screen.classList.add('is-collapsing');
 
-          animateCoversCollapse(finishCollapse);
+          requestAnimationFrame(function () {
+            animateCoversCollapse(finishCollapse);
+          });
         }
 
         bindTap(coverStack, function () {
@@ -984,6 +1521,18 @@
           }
           collapsePlaylist();
         });
+
+        if (mainPlayBtn) {
+          bindTap(mainPlayBtn, function () {
+            playSongAtIndex(nowPlayingIndex);
+          });
+          mainPlayBtn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              playSongAtIndex(nowPlayingIndex);
+            }
+          });
+        }
       })();
     </script>
   </body>
